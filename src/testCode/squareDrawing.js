@@ -35,6 +35,10 @@ function App() {
     offsetX: 0,
     offsetY: 0,
   });
+  const [currentlyHoveredCP, setCurrentlyHoveredCP] = useState({
+    id: "",
+    type: "",
+  });
   const [cursor, setCursor] = useState(pointerEnum.default);
 
   const canvasRef = useRef();
@@ -58,6 +62,12 @@ function App() {
         width: 100,
         height: 100,
         controlPoints: [
+          { x: 50, y: 50, type: controlPoints.TOP_LEFT },
+          { x: 150, y: 50, type: controlPoints.TOP_RIGHT },
+          { x: 50, y: 150, type: controlPoints.BOTTOM_LEFT },
+          { x: 150, y: 150, type: controlPoints.BOTTOM_RIGHT },
+        ],
+        controlPoints2: [
           { x: 50, y: 50, type: controlPoints.TOP_LEFT },
           { x: 50, y: 150, type: controlPoints.TOP_RIGHT },
           { x: 150, y: 50, type: controlPoints.BOTTOM_LEFT },
@@ -84,7 +94,7 @@ function App() {
       let currentSquareId = uuid();
       setSquares((prev) => [
         ...prev.map((i) => {
-          return { ...i, controlPoints2: i.controlPoints }
+          return { ...i, controlPoints2: i.controlPoints };
         }),
         { id: currentSquareId, x: mouseX, y: mouseY, width: 0, height: 0, background: "blue" },
       ]);
@@ -114,7 +124,7 @@ function App() {
             squareItem.y = curY + curHeight;
             squareItem.height = Math.abs(squareItem.height);
           }
-          if(!squareItem.controlPoints2) {
+          if (!squareItem.controlPoints2) {
             squareItem.controlPoints2 = [
               {
                 x: squareItem.x,
@@ -136,7 +146,7 @@ function App() {
                 y: squareItem.y + squareItem.height,
                 type: controlPoints.BOTTOM_RIGHT,
               },
-            ]
+            ];
           }
           return {
             ...squareItem,
@@ -173,6 +183,10 @@ function App() {
     });
   }, [squares]);
 
+  useEffect(() => {
+    console.log(currentlyHoveredCP);
+  }, [currentlyHoveredCP]);
+
   const getAdjustedCoordinates = (e) => {
     const rect = canvasRef.current.getBoundingClientRect();
 
@@ -185,10 +199,56 @@ function App() {
   const moveHandler = (e) => {
     const [mouseX, mouseY] = getAdjustedCoordinates(e);
     if (clicked) {
-      if (!!currentlyHoveredSquare.id) {
+      if (!!currentlyHoveredCP.id) {
         setSquares((prev) => {
           return prev.map((i) => {
-            if (i.id === currentlyHoveredSquare.id) {
+            if (i.id === currentlyHoveredCP.id) {
+              // if(currentlyHoveredCP.type === controlPoints.TOP_LEFT) {
+
+              // }
+              switch (currentlyHoveredCP.type) {
+                case controlPoints.TOP_LEFT:
+                  return {
+                    id: i.id,
+                    x: mouseX,
+                    y: mouseY,
+                    controlPoints: [],
+                    width: i.x + i.width - mouseX,
+                    height: i.y + i.height - mouseY,
+                    background: i.background,
+                  };
+                case controlPoints.TOP_RIGHT:
+                  return {
+                    id: i.id,
+                    x: i.x,
+                    y: mouseY,
+                    controlPoints: [],
+                    width: mouseX - i.x,
+                    height: i.y + i.height - mouseY,
+                    background: i.background,
+                  };
+                case controlPoints.BOTTOM_LEFT:
+                  return {
+                    id: i.id,
+                    x: mouseX,
+                    y: i.y,
+                    controlPoints: [],
+                    width: i.width + i.x - mouseX,
+                    height: mouseY - i.y,
+                    background: i.background,
+                  };
+                case controlPoints.BOTTOM_RIGHT:
+                  return {
+                    id: i.id,
+                    x: i.x,
+                    y: i.y,
+                    controlPoints: [],
+                    width: mouseX - i.x,
+                    height: mouseY - i.y,
+                    background: i.background,
+                  };
+              }
+
               return {
                 id: i.id,
                 x: mouseX - currentlyHoveredSquare.offsetX,
@@ -225,14 +285,48 @@ function App() {
             return { ...i };
           });
         });
+      } else if (!!currentlyHoveredSquare.id) {
+        setSquares((prev) => {
+          return prev.map((i) => {
+            if (i.id === currentlyHoveredSquare.id) {
+              return {
+                id: i.id,
+                x: mouseX - currentlyHoveredSquare.offsetX,
+                y: mouseY - currentlyHoveredSquare.offsetY,
+                controlPoints: [],
+                width: i.width,
+                height: i.height,
+                background: i.background,
+              };
+            }
+            // return { ...i, controlPoints2: i.controlPoints, controlPoints: [] };
+            return { ...i };
+          });
+        });
       } else {
         draw(e);
       }
     } else {
+      let isCPHovered = false;
+      let currentHoveredCP = "";
       let isHovered = false;
       let currentHoveredSquare = "";
 
       squares.forEach((squareElement) => {
+        if (!isCPHovered) {
+          squareElement.controlPoints.forEach((cpElement) => {
+            let dist = Math.sqrt(
+              (cpElement.x - mouseX) * (cpElement.x - mouseX) +
+                (cpElement.y - mouseY) * (cpElement.y - mouseY)
+            );
+            if (dist <= 8) {
+              isCPHovered = true;
+              isHovered = true;
+              currentHoveredCP = cpElement.type;
+              currentHoveredSquare = squareElement.id;
+            }
+          });
+        }
         if (!isHovered) {
           if (
             mouseX >= squareElement.x &&
@@ -248,17 +342,38 @@ function App() {
           }
         }
       });
+      if (isCPHovered) {
+        setCurrentlyHoveredCP({
+          id: currentHoveredSquare,
+          type: currentHoveredCP,
+        });
+      } else {
+        setCurrentlyHoveredCP({
+          id: null,
+          type: null
+        })
+      }
       if (currentlyHoveredSquare.id !== currentHoveredSquare) {
         setCurrentlyHoveredSquare({
           id: currentHoveredSquare,
           offsetX: currentlyHoveredSquare.offsetX,
           offsetY: currentlyHoveredSquare.offsetY,
         });
-      }
-      if (isHovered) {
-        setCursor(pointerEnum.move);
       } else {
-        setCursor(pointerEnum.default);
+        if(!isHovered) {
+          setCurrentlyHoveredSquare({
+            id: null, 
+            offsetX: 0, 
+            offsetY: 0
+          })
+        }
+      }
+      if (!isCPHovered) {
+        if (isHovered) {
+          setCursor(pointerEnum.move);
+        } else {
+          setCursor(pointerEnum.default);
+        }
       }
     }
   };
