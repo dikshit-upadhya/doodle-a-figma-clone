@@ -42,7 +42,6 @@ function App() {
 
   const resetCanvas = () => {
     canvasContext.current.fillStyle = "skyblue";
-    canvasContext.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
     canvasContext.current.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);
   };
 
@@ -71,7 +70,9 @@ function App() {
   }, []);
 
   const clickedController = (e) => {
+    console.log("CLICK FIRED");
     const [mouseX, mouseY] = getAdjustedCoordinates(e);
+    setClicked(true);
     if (currentlyHoveredSquare.id) {
       let curSquare = squares.find((i) => i.id === currentlyHoveredSquare.id);
       setCurrentlyHoveredSquare({
@@ -79,23 +80,20 @@ function App() {
         offsetX: Math.abs(curSquare.x - mouseX),
         offsetY: Math.abs(curSquare.y - mouseY),
       });
+    } else {
+      let currentSquareId = uuid();
+      setSquares((prev) => [
+        ...prev.map((i) => {
+          return { ...i, controlPoints2: i.controlPoints }
+        }),
+        { id: currentSquareId, x: mouseX, y: mouseY, width: 0, height: 0, background: "blue" },
+      ]);
+      setActiveSquare({ id: currentSquareId });
     }
-    const context = canvasContext.current;
-    setClicked(true);
-    let currentSquareId = uuid();
-    squares.forEach((squareElement) => {
-      context.fillStyle = squareElement.background;
-      context.fillRect(squareElement.x, squareElement.y, squareElement.width, squareElement.height);
-    });
-
-    setSquares((prev) => [
-      ...prev.map(i => ({...i, controlPoints2: i.controlPoints})),
-      { id: currentSquareId, x: mouseX, y: mouseY, width: 0, height: 0, background: "blue" },
-    ]);
-    setActiveSquare({ id: currentSquareId });
   };
 
   const unclickedController = (e) => {
+    console.log("UNCLICK FIRED");
     // this function is so that when mouse clicks and draws square in opposite x direction or the opposite y direction. This function redefines the x and y coordinates of the square
     // debugger;
     setSquares((prev) => {
@@ -116,7 +114,35 @@ function App() {
             squareItem.y = curY + curHeight;
             squareItem.height = Math.abs(squareItem.height);
           }
-          return { ...squareItem, controlPoints: squareItem.controlPoints2, controlPoints2: squareItem.controlPoints2 };
+          if(!squareItem.controlPoints2) {
+            squareItem.controlPoints2 = [
+              {
+                x: squareItem.x,
+                y: squareItem.y,
+                type: controlPoints.TOP_LEFT,
+              },
+              {
+                x: squareItem.x + squareItem.width,
+                y: squareItem.y,
+                type: controlPoints.TOP_RIGHT,
+              },
+              {
+                x: squareItem.x,
+                y: squareItem.y + squareItem.height,
+                type: controlPoints.BOTTOM_LEFT,
+              },
+              {
+                x: squareItem.x + squareItem.width,
+                y: squareItem.y + squareItem.height,
+                type: controlPoints.BOTTOM_RIGHT,
+              },
+            ]
+          }
+          return {
+            ...squareItem,
+            controlPoints: squareItem.controlPoints2,
+            controlPoints2: squareItem.controlPoints2,
+          };
         });
       return reqdArr;
     });
@@ -125,7 +151,8 @@ function App() {
   };
 
   useEffect(() => {
-    console.log(squares)
+    console.log("SQUARES DRAWN");
+    console.log(squares);
     let context = canvasContext.current;
     resetCanvas();
     squares.forEach((squareItem) => {
@@ -136,12 +163,12 @@ function App() {
       context.strokeStyle = "blue";
       context.fillStyle = "white";
       squareItem.controlPoints?.forEach((point) => {
-        context.beginPath()
+        context.beginPath();
         context.moveTo(point.x, point.y);
         context.arc(point.x, point.y, 5, 0, 2 * Math.PI, false);
         context.stroke();
         context.fill();
-        context.closePath()
+        context.closePath();
       });
     });
   }, [squares]);
@@ -153,7 +180,7 @@ function App() {
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
     return [mouseX, mouseY];
-  }
+  };
 
   const moveHandler = (e) => {
     const [mouseX, mouseY] = getAdjustedCoordinates(e);
@@ -195,7 +222,7 @@ function App() {
               };
             }
             // return { ...i, controlPoints2: i.controlPoints, controlPoints: [] };
-            return { ...i, controlPoints2: i.controlPoints, controlPoints: [] };
+            return { ...i };
           });
         });
       } else {
