@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 
+const pointerEnum2 = {}
+
 const pointerEnum = {
 	default: 'default',
 	pointer: 'pointer',
