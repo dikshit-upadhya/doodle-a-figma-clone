@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 function App() {
 	const [clicked, setClicked] = useState(false);
@@ -15,13 +15,13 @@ function App() {
 		context.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);
 	}, []);
 
-	const clickedController = (e) => {
+	const clickedController = () => {
 		const context = canvasRef.current.getContext('2d');
 		setClicked(true);
 		context.beginPath();
 	};
 
-	const unclickedController = (e) => {
+	const unclickedController = () => {
 		setClicked(false);
 	};
 
@@ -41,7 +41,7 @@ function App() {
 		context.stroke();
 	};
 
-	const scrollHandler = (e) => {};
+	const scrollHandler = () => {};
 
 	return (
 		<div className="App">

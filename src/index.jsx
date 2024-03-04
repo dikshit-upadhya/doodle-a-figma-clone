@@ -1,14 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './testCode/squareDrawing';
 import {
 	ThemeProvider,
 	createTheme,
 	StyledEngineProvider,
 } from '@mui/material';
+import App from './testCode/squareDrawing';
 
-let theme = createTheme();
+const theme = createTheme();
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

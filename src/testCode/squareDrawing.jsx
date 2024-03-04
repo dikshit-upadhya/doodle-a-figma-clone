@@ -1,7 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
-
-const pointerEnum2 = {}
 
 const pointerEnum = {
 	default: 'default',
@@ -18,13 +16,11 @@ const controlPoints = {
 	BOTTOM_RIGHT: 'BOTTOM_RIGHT',
 };
 
-let styles = {};
-let makeStyleForCursor = (cursorValue) => {
-	return {
-		cursor: cursorValue,
-	};
-};
-Object.keys(pointerEnum).forEach((i, index) => {
+const styles = {};
+const makeStyleForCursor = (cursorValue) => ({
+	cursor: cursorValue,
+});
+Object.keys(pointerEnum).forEach((i) => {
 	styles[i] = makeStyleForCursor(pointerEnum[i]);
 });
 
@@ -95,34 +91,71 @@ function App() {
 		resetCanvas();
 	}, []);
 
+	const redrawEverything = () => {
+		const context = canvasContext.current;
+		resetCanvas();
+		squares.forEach((squareItem) => {
+			context.fillStyle = squareItem.background;
+			context.fillRect(
+				squareItem.x,
+				squareItem.y,
+				squareItem.width,
+				squareItem.height
+			);
+			context.strokeStyle = 'black';
+			context.strokeRect(
+				squareItem.x,
+				squareItem.y,
+				squareItem.width,
+				squareItem.height
+			);
+			context.strokeStyle = 'blue';
+			context.fillStyle = 'white';
+			squareItem.controlPoints?.forEach((point) => {
+				context.beginPath();
+				context.moveTo(point.x, point.y);
+				context.arc(point.x, point.y, 5, 0, 2 * Math.PI, false);
+				context.stroke();
+				context.fill();
+				context.closePath();
+			});
+		});
+	};
+
 	useEffect(() => {
-		let a = canvasTransform.a;
-		let b = canvasTransform.b;
-		let c = canvasTransform.c;
-		let d = canvasTransform.d;
-		let e = canvasTransform.e;
-		let f = canvasTransform.f;
+		const { a } = canvasTransform;
+		const { b } = canvasTransform;
+		const { c } = canvasTransform;
+		const { d } = canvasTransform;
+		const { e } = canvasTransform;
+		const { f } = canvasTransform;
 		canvasContext.current.setTransform(a, b, c, d, e, f);
 		redrawEverything();
 	}, [canvasTransform]);
 
+	const getAdjustedCoordinates = (e) => {
+		const rect = canvasRef.current.getBoundingClientRect();
+
+		// Calculate mouse coordinates relative to the canvas
+		const mouseX = e.clientX - rect.left - canvasTransform.e;
+		const mouseY = e.clientY - rect.top - canvasTransform.f;
+		return [mouseX, mouseY];
+	};
+
 	const clickedController = (e) => {
-		console.log(e);
 		const [mouseX, mouseY] = getAdjustedCoordinates(e);
 		setClicked(true);
 		if (currentlyHoveredSquare.id) {
-			let curSquare = squares.find((i) => i.id === currentlyHoveredSquare.id);
+			const curSquare = squares.find((i) => i.id === currentlyHoveredSquare.id);
 			setCurrentlyHoveredSquare({
 				id: curSquare.id,
 				offsetX: Math.abs(curSquare.x - mouseX),
 				offsetY: Math.abs(curSquare.y - mouseY),
 			});
 		} else {
-			let currentSquareId = uuid();
+			const currentSquareId = uuid();
 			setSquares((prev) => [
-				...prev.map((i) => {
-					return { ...i, controlPoints2: i.controlPoints };
-				}),
+				...prev.map((i) => ({ ...i, controlPoints2: i.controlPoints })),
 				{
 					id: currentSquareId,
 					x: mouseX,
@@ -136,25 +169,22 @@ function App() {
 		}
 	};
 
-	const unclickedController = (e) => {
-		console.log('UNCLICK FIRED');
+	const unclickedController = () => {
 		// this function is so that when mouse clicks and draws square in opposite x direction or the opposite y direction. This function redefines the x and y coordinates of the square
-		// debugger;
 		setSquares((prev) => {
-			let reqdArr = prev
-				.filter((i) => {
-					return i.width !== 0 || i.height !== 0;
-				})
-				.map((squareItem) => {
+			const reqdArr = prev
+				.filter((i) => i.width !== 0 || i.height !== 0)
+				.map((item) => {
+					const squareItem = item;
 					if (squareItem.width < 0) {
-						let curWidth = squareItem.width;
-						let curX = squareItem.x;
+						const curWidth = squareItem.width;
+						const curX = squareItem.x;
 						squareItem.x = curX + curWidth;
 						squareItem.width = Math.abs(squareItem.width);
 					}
 					if (squareItem.height < 0) {
-						let curHeight = squareItem.height;
-						let curY = squareItem.y;
+						const curHeight = squareItem.height;
+						const curY = squareItem.y;
 						squareItem.y = curY + curHeight;
 						squareItem.height = Math.abs(squareItem.height);
 					}
@@ -194,56 +224,37 @@ function App() {
 		setActiveSquare({ id: null, offsetX: 10, offsetY: 10 });
 	};
 
-	const redrawEverything = () => {
-		let context = canvasContext.current;
-		resetCanvas();
-		squares.forEach((squareItem) => {
-			context.fillStyle = squareItem.background;
-			context.fillRect(
-				squareItem.x,
-				squareItem.y,
-				squareItem.width,
-				squareItem.height
-			);
-			context.strokeStyle = 'black';
-			context.strokeRect(
-				squareItem.x,
-				squareItem.y,
-				squareItem.width,
-				squareItem.height
-			);
-			context.strokeStyle = 'blue';
-			context.fillStyle = 'white';
-			squareItem.controlPoints?.forEach((point) => {
-				context.beginPath();
-				context.moveTo(point.x, point.y);
-				context.arc(point.x, point.y, 5, 0, 2 * Math.PI, false);
-				context.stroke();
-				context.fill();
-				context.closePath();
-			});
-		});
-	};
-
 	useEffect(() => {
 		redrawEverything();
 	}, [squares]);
 
-	const getAdjustedCoordinates = (e) => {
-		const rect = canvasRef.current.getBoundingClientRect();
-
-		// Calculate mouse coordinates relative to the canvas
-		const mouseX = e.clientX - rect.left - canvasTransform.e;
-		const mouseY = e.clientY - rect.top - canvasTransform.f;
-		return [mouseX, mouseY];
+	const draw = (e) => {
+		const [mouseX, mouseY] = getAdjustedCoordinates(e);
+		// find the square that you are currently drawing.
+		const currentSquare = squares.find((i) => i.id === activeSquare.id);
+		setSquares((prev) => [
+			...prev.map((i) => {
+				if (i.id === currentSquare.id) {
+					return {
+						id: currentSquare.id,
+						x: currentSquare.x,
+						y: currentSquare.y,
+						width: mouseX - currentSquare.x,
+						height: mouseY - currentSquare.y,
+						background: 'blue',
+					};
+				}
+				return i;
+			}),
+		]);
 	};
 
 	const moveHandler = (e) => {
 		const [mouseX, mouseY] = getAdjustedCoordinates(e);
 		if (clicked) {
-			if (!!currentlyHoveredCP.id) {
-				setSquares((prev) => {
-					return prev.map((i) => {
+			if (currentlyHoveredCP.id) {
+				setSquares((prev) =>
+					prev.map((i) => {
 						if (i.id === currentlyHoveredCP.id) {
 							// if(currentlyHoveredCP.type === controlPoints.TOP_LEFT) {
 
@@ -289,6 +300,8 @@ function App() {
 										height: mouseY - i.y,
 										background: i.background,
 									};
+								default:
+									break;
 							}
 
 							return {
@@ -325,11 +338,11 @@ function App() {
 						}
 						// return { ...i, controlPoints2: i.controlPoints, controlPoints: [] };
 						return { ...i };
-					});
-				});
-			} else if (!!currentlyHoveredSquare.id) {
-				setSquares((prev) => {
-					return prev.map((i) => {
+					})
+				);
+			} else if (currentlyHoveredSquare.id) {
+				setSquares((prev) =>
+					prev.map((i) => {
 						if (i.id === currentlyHoveredSquare.id) {
 							return {
 								id: i.id,
@@ -343,8 +356,8 @@ function App() {
 						}
 						// return { ...i, controlPoints2: i.controlPoints, controlPoints: [] };
 						return { ...i };
-					});
-				});
+					})
+				);
 			} else {
 				draw(e);
 			}
@@ -357,7 +370,7 @@ function App() {
 			squares.forEach((squareElement) => {
 				if (!isCPHovered) {
 					squareElement.controlPoints.forEach((cpElement) => {
-						let dist = Math.sqrt(
+						const dist = Math.sqrt(
 							(cpElement.x - mouseX) * (cpElement.x - mouseX) +
 								(cpElement.y - mouseY) * (cpElement.y - mouseY)
 						);
@@ -401,14 +414,12 @@ function App() {
 					offsetX: currentlyHoveredSquare.offsetX,
 					offsetY: currentlyHoveredSquare.offsetY,
 				});
-			} else {
-				if (!isHovered) {
-					setCurrentlyHoveredSquare({
-						id: null,
-						offsetX: 0,
-						offsetY: 0,
-					});
-				}
+			} else if (!isHovered) {
+				setCurrentlyHoveredSquare({
+					id: null,
+					offsetX: 0,
+					offsetY: 0,
+				});
 			}
 			if (!isCPHovered) {
 				if (isHovered) {
@@ -420,33 +431,12 @@ function App() {
 		}
 	};
 
-	const draw = (e) => {
-		const [mouseX, mouseY] = getAdjustedCoordinates(e);
-		// find the square that you are currently drawing.
-		let currentSquare = squares.find((i) => i.id === activeSquare.id);
-		setSquares((prev) => [
-			...prev.map((i) => {
-				if (i.id === currentSquare.id) {
-					return {
-						id: currentSquare.id,
-						x: currentSquare.x,
-						y: currentSquare.y,
-						width: mouseX - currentSquare.x,
-						height: mouseY - currentSquare.y,
-						background: 'blue',
-					};
-				}
-				return i;
-			}),
-		]);
-	};
-
 	function detectMouseWheelDirection(e) {
 		return e.deltaY > 0 ? 'down' : 'up';
 	}
 
 	const scrollHandler = (e) => {
-		let direction = detectMouseWheelDirection(e);
+		const direction = detectMouseWheelDirection(e);
 		if (!e.shiftKey) {
 			if (direction === 'down') {
 				setCanvasTransform((prev) => ({
@@ -467,26 +457,24 @@ function App() {
 					f: prev.f + 5,
 				}));
 			}
+		} else if (direction === 'down') {
+			setCanvasTransform((prev) => ({
+				a: prev.a,
+				b: prev.b,
+				c: prev.c,
+				d: prev.d,
+				e: prev.e - 5,
+				f: prev.f,
+			}));
 		} else {
-			if (direction === 'down') {
-				setCanvasTransform((prev) => ({
-					a: prev.a,
-					b: prev.b,
-					c: prev.c,
-					d: prev.d,
-					e: prev.e - 5,
-					f: prev.f,
-				}));
-			} else {
-				setCanvasTransform((prev) => ({
-					a: prev.a,
-					b: prev.b,
-					c: prev.c,
-					d: prev.d,
-					e: prev.e + 5,
-					f: prev.f,
-				}));
-			}
+			setCanvasTransform((prev) => ({
+				a: prev.a,
+				b: prev.b,
+				c: prev.c,
+				d: prev.d,
+				e: prev.e + 5,
+				f: prev.f,
+			}));
 		}
 		redrawEverything();
 		// }
