@@ -2,11 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 
 const pointerEnum = {
-	default: 'default',
+	default: 'url(cursor.png), auto',
 	pointer: 'pointer',
 	crosshair: 'crosshair',
-	move: 'move',
+	move: 'url(cursor.png), auto',
 	text: 'text',
+	brtl: 'url(br-tl.png) 9 9 , auto',
+	bltr: 'url(bl-tr.png) 9 9 , auto',
 };
 
 const controlPoints = {
@@ -27,6 +29,7 @@ Object.keys(pointerEnum).forEach((i) => {
 function App() {
 	const [clicked, setClicked] = useState(false);
 	const [squares, setSquares] = useState([]);
+	const [zIndex, setZIndex] = useState(1);
 	const [activeSquare, setActiveSquare] = useState([]);
 	const [currentlyHoveredSquare, setCurrentlyHoveredSquare] = useState({
 		id: '',
@@ -86,8 +89,10 @@ function App() {
 					{ x: 150, y: 150, type: controlPoints.BOTTOM_RIGHT },
 				],
 				background: 'red',
+				zIndex,
 			},
 		]);
+		setZIndex((prev) => prev + 1);
 		resetCanvas();
 	}, []);
 
@@ -123,12 +128,7 @@ function App() {
 	};
 
 	useEffect(() => {
-		const { a } = canvasTransform;
-		const { b } = canvasTransform;
-		const { c } = canvasTransform;
-		const { d } = canvasTransform;
-		const { e } = canvasTransform;
-		const { f } = canvasTransform;
+		const { a, b, c, d, e, f } = canvasTransform;
 		canvasContext.current.setTransform(a, b, c, d, e, f);
 		redrawEverything();
 	}, [canvasTransform]);
@@ -163,8 +163,10 @@ function App() {
 					width: 0,
 					height: 0,
 					background: 'blue',
+					zIndex,
 				},
 			]);
+			setZIndex((prev) => prev + 1);
 			setActiveSquare({ id: currentSquareId });
 		}
 	};
@@ -241,7 +243,8 @@ function App() {
 						y: currentSquare.y,
 						width: mouseX - currentSquare.x,
 						height: mouseY - currentSquare.y,
-						background: 'blue',
+						background: '#2234eb64',
+						zIndex: currentSquare.zIndex,
 					};
 				}
 				return i;
@@ -269,6 +272,7 @@ function App() {
 										width: i.x + i.width - mouseX,
 										height: i.y + i.height - mouseY,
 										background: i.background,
+										zIndex: i.zIndex,
 									};
 								case controlPoints.TOP_RIGHT:
 									return {
@@ -279,6 +283,7 @@ function App() {
 										width: mouseX - i.x,
 										height: i.y + i.height - mouseY,
 										background: i.background,
+										zIndex: i.zIndex,
 									};
 								case controlPoints.BOTTOM_LEFT:
 									return {
@@ -289,6 +294,7 @@ function App() {
 										width: i.width + i.x - mouseX,
 										height: mouseY - i.y,
 										background: i.background,
+										zIndex: i.zIndex,
 									};
 								case controlPoints.BOTTOM_RIGHT:
 									return {
@@ -299,44 +305,12 @@ function App() {
 										width: mouseX - i.x,
 										height: mouseY - i.y,
 										background: i.background,
+										zIndex: i.zIndex,
 									};
 								default:
 									break;
 							}
-
-							return {
-								id: i.id,
-								x: mouseX - currentlyHoveredSquare.offsetX,
-								y: mouseY - currentlyHoveredSquare.offsetY,
-								controlPoints2: [
-									{
-										x: mouseX - currentlyHoveredSquare.offsetX,
-										y: mouseY - currentlyHoveredSquare.offsetY,
-										type: controlPoints.TOP_LEFT,
-									},
-									{
-										x: mouseX - currentlyHoveredSquare.offsetX + i.width,
-										y: mouseY - currentlyHoveredSquare.offsetY,
-										type: controlPoints.TOP_RIGHT,
-									},
-									{
-										x: mouseX - currentlyHoveredSquare.offsetX,
-										y: mouseY - currentlyHoveredSquare.offsetY + i.height,
-										type: controlPoints.BOTTOM_LEFT,
-									},
-									{
-										x: mouseX - currentlyHoveredSquare.offsetX + i.width,
-										y: mouseY - currentlyHoveredSquare.offsetY + i.height,
-										type: controlPoints.BOTTOM_RIGHT,
-									},
-								],
-								controlPoints: [],
-								width: i.width,
-								height: i.height,
-								background: i.background,
-							};
 						}
-						// return { ...i, controlPoints2: i.controlPoints, controlPoints: [] };
 						return { ...i };
 					})
 				);
@@ -352,9 +326,9 @@ function App() {
 								width: i.width,
 								height: i.height,
 								background: i.background,
+								zIndex: i.zIndex,
 							};
 						}
-						// return { ...i, controlPoints2: i.controlPoints, controlPoints: [] };
 						return { ...i };
 					})
 				);
@@ -362,69 +336,92 @@ function App() {
 				draw(e);
 			}
 		} else {
-			let isCPHovered = false;
-			let currentHoveredCP = '';
-			let isHovered = false;
-			let currentHoveredSquare = '';
+			const currentHoveredCPArray = [];
+			const currentHoveredSquareArray = [];
 
 			squares.forEach((squareElement) => {
-				if (!isCPHovered) {
-					squareElement.controlPoints.forEach((cpElement) => {
-						const dist = Math.sqrt(
-							(cpElement.x - mouseX) * (cpElement.x - mouseX) +
-								(cpElement.y - mouseY) * (cpElement.y - mouseY)
-						);
-						if (dist <= 8) {
-							isCPHovered = true;
-							isHovered = true;
-							currentHoveredCP = cpElement.type;
-							currentHoveredSquare = squareElement.id;
-						}
-					});
-				}
-				if (!isHovered) {
-					if (
-						mouseX >= squareElement.x &&
-						mouseX <= squareElement.x + squareElement.width &&
-						mouseY >= squareElement.y &&
-						mouseY <= squareElement.y + squareElement.height
-					) {
-						isHovered = true;
-						currentHoveredSquare = squareElement.id;
-					} else {
-						isHovered = false;
-						currentHoveredSquare = '';
+				squareElement.controlPoints.forEach((cpElement) => {
+					const dist = Math.sqrt(
+						(cpElement.x - mouseX) * (cpElement.x - mouseX) +
+							(cpElement.y - mouseY) * (cpElement.y - mouseY)
+					);
+					if (dist <= 12) {
+						currentHoveredCPArray.push({
+							currentHoveredCP: cpElement.type,
+							currentHoveredSquare: squareElement,
+						});
 					}
+				});
+				if (
+					mouseX >= squareElement.x &&
+					mouseX <= squareElement.x + squareElement.width &&
+					mouseY >= squareElement.y &&
+					mouseY <= squareElement.y + squareElement.height
+				) {
+					currentHoveredSquareArray.push(squareElement);
 				}
 			});
-			if (isCPHovered) {
-				setCurrentlyHoveredCP({
-					id: currentHoveredSquare,
-					type: currentHoveredCP,
-				});
-			} else {
-				setCurrentlyHoveredCP({
-					id: null,
-					type: null,
-				});
-			}
-			if (currentlyHoveredSquare.id !== currentHoveredSquare) {
-				setCurrentlyHoveredSquare({
-					id: currentHoveredSquare,
-					offsetX: currentlyHoveredSquare.offsetX,
-					offsetY: currentlyHoveredSquare.offsetY,
-				});
-			} else if (!isHovered) {
-				setCurrentlyHoveredSquare({
-					id: null,
-					offsetX: 0,
-					offsetY: 0,
-				});
-			}
-			if (!isCPHovered) {
-				if (isHovered) {
-					setCursor(pointerEnum.move);
+			const mostRecentCP =
+				currentHoveredCPArray[currentHoveredCPArray.length - 1];
+			const mostRecentSquare =
+				currentHoveredSquareArray[currentHoveredSquareArray.length - 1];
+			if (!!mostRecentCP && !!mostRecentSquare) {
+				if (
+					mostRecentCP.currentHoveredSquare.zIndex >= mostRecentSquare.zIndex
+				) {
+					setCurrentlyHoveredCP({
+						id: mostRecentCP.currentHoveredSquare.id,
+						type: mostRecentCP.currentHoveredCP,
+					});
+					setCursor(
+						[controlPoints.BOTTOM_RIGHT, controlPoints.TOP_LEFT].includes(
+							mostRecentCP.currentHoveredCP
+						)
+							? pointerEnum.brtl
+							: pointerEnum.bltr
+					);
 				} else {
+					setCurrentlyHoveredSquare({
+						id: mostRecentSquare.id,
+						offsetX: currentlyHoveredSquare.offsetX,
+						offsetY: currentlyHoveredSquare.offsetY,
+					});
+					setCursor(pointerEnum.default);
+				}
+			} else {
+				if (mostRecentSquare) {
+					if (currentlyHoveredSquare.id !== mostRecentSquare.id) {
+						setCurrentlyHoveredSquare({
+							id: mostRecentSquare.id,
+							offsetX: currentlyHoveredSquare.offsetX,
+							offsetY: currentlyHoveredSquare.offsetY,
+						});
+					}
+				} else {
+					setCurrentlyHoveredSquare({
+						id: null,
+						offsetX: 0,
+						offsetY: 0,
+					});
+					setCursor(pointerEnum.default);
+				}
+				if (mostRecentCP) {
+					setCurrentlyHoveredCP({
+						id: mostRecentCP.currentHoveredSquare.id,
+						type: mostRecentCP.currentHoveredCP,
+					});
+					setCursor(
+						[controlPoints.BOTTOM_RIGHT, controlPoints.TOP_LEFT].includes(
+							mostRecentCP.currentHoveredCP
+						)
+							? pointerEnum.brtl
+							: pointerEnum.bltr
+					);
+				} else {
+					setCurrentlyHoveredCP({
+						id: null,
+						type: null,
+					});
 					setCursor(pointerEnum.default);
 				}
 			}
@@ -432,56 +429,81 @@ function App() {
 	};
 
 	function detectMouseWheelDirection(e) {
-		return e.deltaY > 0 ? 'down' : 'up';
+		let direction = '';
+		if (e.shiftKey) {
+			if (e.deltaY > 0) {
+				direction = 'right';
+			} else {
+				direction = 'left';
+			}
+		} else {
+			if (e.deltaY > 0) {
+				direction = 'down';
+			} else {
+				direction = 'up';
+			}
+		}
+		return direction;
 	}
 
 	const scrollHandler = (e) => {
 		const direction = detectMouseWheelDirection(e);
-		if (!e.shiftKey) {
-			if (direction === 'down') {
+		switch (direction) {
+			case 'down':
 				setCanvasTransform((prev) => ({
 					a: prev.a,
 					b: prev.b,
 					c: prev.c,
 					d: prev.d,
 					e: prev.e,
-					f: prev.f - 5,
+					f: prev.f - 50,
 				}));
-			} else {
+				break;
+			case 'up':
 				setCanvasTransform((prev) => ({
 					a: prev.a,
 					b: prev.b,
 					c: prev.c,
 					d: prev.d,
 					e: prev.e,
-					f: prev.f + 5,
+					f: prev.f + 50,
 				}));
-			}
-		} else if (direction === 'down') {
-			setCanvasTransform((prev) => ({
-				a: prev.a,
-				b: prev.b,
-				c: prev.c,
-				d: prev.d,
-				e: prev.e - 5,
-				f: prev.f,
-			}));
-		} else {
-			setCanvasTransform((prev) => ({
-				a: prev.a,
-				b: prev.b,
-				c: prev.c,
-				d: prev.d,
-				e: prev.e + 5,
-				f: prev.f,
-			}));
+				break;
+			case 'right':
+				setCanvasTransform((prev) => ({
+					a: prev.a,
+					b: prev.b,
+					c: prev.c,
+					d: prev.d,
+					e: prev.e - 50,
+					f: prev.f,
+				}));
+				break;
+			case 'left':
+				setCanvasTransform((prev) => ({
+					a: prev.a,
+					b: prev.b,
+					c: prev.c,
+					d: prev.d,
+					e: prev.e + 50,
+					f: prev.f,
+				}));
+				break;
+			default:
+				setCanvasTransform({
+					a: 1,
+					b: 0,
+					c: 0,
+					d: 1,
+					e: 0,
+					f: 0,
+				});
 		}
 		redrawEverything();
-		// }
 	};
 
 	return (
-		<div className="App" style={{ ...styles[cursor] }}>
+		<div className="App" style={{ cursor }}>
 			<canvas
 				ref={canvasRef}
 				onMouseDown={clickedController}
