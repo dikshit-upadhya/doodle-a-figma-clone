@@ -89,11 +89,13 @@ function App() {
 					{ x: 150, y: 150, type: controlPoints.BOTTOM_RIGHT },
 				],
 				background: 'red',
+				stroke: 'black',
 				zIndex,
 			},
 		]);
 		setZIndex((prev) => prev + 1);
 		resetCanvas();
+		window.addEventListener('contextmenu', (e) => e.preventDefault())
 	}, []);
 
 	const redrawEverything = () => {
@@ -107,7 +109,7 @@ function App() {
 				squareItem.width,
 				squareItem.height
 			);
-			context.strokeStyle = 'black';
+			context.strokeStyle = squareItem.stroke;
 			context.strokeRect(
 				squareItem.x,
 				squareItem.y,
@@ -144,30 +146,35 @@ function App() {
 
 	const clickedController = (e) => {
 		const [mouseX, mouseY] = getAdjustedCoordinates(e);
-		setClicked(true);
-		if (currentlyHoveredSquare.id) {
-			const curSquare = squares.find((i) => i.id === currentlyHoveredSquare.id);
-			setCurrentlyHoveredSquare({
-				id: curSquare.id,
-				offsetX: Math.abs(curSquare.x - mouseX),
-				offsetY: Math.abs(curSquare.y - mouseY),
-			});
-		} else {
-			const currentSquareId = uuid();
-			setSquares((prev) => [
-				...prev.map((i) => ({ ...i, controlPoints2: i.controlPoints })),
-				{
-					id: currentSquareId,
-					x: mouseX,
-					y: mouseY,
-					width: 0,
-					height: 0,
-					background: 'blue',
-					zIndex,
-				},
-			]);
-			setZIndex((prev) => prev + 1);
-			setActiveSquare({ id: currentSquareId });
+		e.preventDefault()
+		if (e.button === 0) {
+			setClicked(true);
+			if (currentlyHoveredSquare.id) {
+				const curSquare = squares.find(
+					(i) => i.id === currentlyHoveredSquare.id
+				);
+				setCurrentlyHoveredSquare({
+					id: curSquare.id,
+					offsetX: Math.abs(curSquare.x - mouseX),
+					offsetY: Math.abs(curSquare.y - mouseY),
+				});
+			} else {
+				const currentSquareId = uuid();
+				setSquares((prev) => [
+					...prev.map((i) => ({ ...i, controlPoints2: i.controlPoints })),
+					{
+						id: currentSquareId,
+						x: mouseX,
+						y: mouseY,
+						width: 0,
+						height: 0,
+						background: 'blue',
+						zIndex,
+					},
+				]);
+				setZIndex((prev) => prev + 1);
+				setActiveSquare({ id: currentSquareId });
+			}
 		}
 	};
 

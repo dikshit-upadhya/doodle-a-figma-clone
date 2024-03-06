@@ -8,11 +8,9 @@
 		"ecmaVersion": "latest",
 		"sourceType": "module"
 	},
-	"plugins": ["react"],
+	"plugins": ["react", "only-warn"],
 	"rules": {
-		"no-console": "warn",
-		"no-lonely-if": "off",
-		"no-unused-vars": "warn"
+		"no-lonely-if": "off"
 	},
 	"overrides": [
 		{

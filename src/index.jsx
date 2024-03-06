@@ -6,7 +6,7 @@ import {
 	createTheme,
 	StyledEngineProvider,
 } from '@mui/material';
-import App from './testCode/squareDrawing';
+import App from './App';
 
 const theme = createTheme();
 
