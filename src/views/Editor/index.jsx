@@ -1,7 +1,9 @@
-import { Canvas } from "./components/Canvas"
+import Canvas from "./components/Canvas"
 import DesignPropertiesMenu from "./components/DesignPropertiesMenu"
 import LayersList from "./components/LayersList"
-import { Toolbar } from "./components/Toolbar"
+import Toolbar from "./components/Toolbar"
+
+
 
 function Editor() {
   return (<>

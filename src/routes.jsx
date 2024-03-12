@@ -1,6 +1,10 @@
-import { Suspense } from 'react';
+import { Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import {v4 as uuid} from 'uuid'
+
+const Editor = lazy(() => import('./views/Editor'))
+
+const pre = ''
 
 export const routesArr = {
   EDITOR: {

@@ -7,14 +7,44 @@ import {
 	StyledEngineProvider,
 } from '@mui/material';
 import App from './App';
+// import App from './testCode/penToolImplementation';
+import { BrowserRouter } from 'react-router-dom';
+import '@fontsource/inter'
 
-const theme = createTheme();
+const theme = createTheme({
+	palette: {
+		gray: '#2c2c2c',
+		darkGray: '#232323',
+		brightBlue: '#0c8ce9',
+		brightBlueText: '#6ebaf2'
+	},
+	typography: {
+		commonText: {
+			fontSize: '14px', 
+			fontFamily: 'Inter'
+		},
+		layersListHeader: {
+			fontSize: '11px', 
+			fontFamily: 'Inter'
+		},
+		layersListTitle: {
+			fontSize:'11px', 
+			fontFamily: 'Inter'
+		},
+		layersListText: {
+			fontSize: '13px',
+			fontFamily: 'Inter'
+		}
+	}
+});
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-	<ThemeProvider theme={theme}>
-		<StyledEngineProvider injectFirst>
-			<App />
-		</StyledEngineProvider>
-	</ThemeProvider>
+	<BrowserRouter>
+		<ThemeProvider theme={theme}>
+			<StyledEngineProvider injectFirst>
+				<App />
+			</StyledEngineProvider>
+		</ThemeProvider>
+	</BrowserRouter>
 );
