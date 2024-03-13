@@ -8,6 +8,7 @@ import {
 	KeyboardArrowUp,
 	SearchRounded,
 } from '@mui/icons-material';
+import { Box } from '@mui/material';
 import {
 	FreePagesContainer,
 	IconWrapper,
@@ -26,7 +27,6 @@ import {
 	Ty,
 	Ty2,
 } from './styled';
-import { Box } from '@mui/material';
 import { testLayersArr } from '../../../../testCode/testConstants';
 
 function LayerRowItem(props) {
@@ -69,30 +69,30 @@ function LayerRowItem(props) {
 function LayersList() {
 	const [isPagesDroppedDown, setIsPagesDroppedDown] = useState(true);
 	const [containerWidth, setContainerWidth] = useState(270);
-	const [clicked, setClicked] = useState(false)
-
-	const clickHandler = (e) => {
-		setClicked(true)
-		e.preventDefault()
-		// window.addEventListener('mouseup', unclickHandler);
-		// window.addEventListener('mousemove', moveHandler);
-	};
+	const [clicked, setClicked] = useState(false);
 
 	useEffect(() => {
-		window.addEventListener('mouseup', unclickHandler);
-		window.addEventListener('mousemove', moveHandler);
-	}, [])
+		if (clicked) {
+			window.addEventListener('mousemove', moveHandler);
+			window.addEventListener('mouseup', unclickHandler);
+		}
+	}, [clicked]);
+
+	const clickHandler = (e) => {
+		e.preventDefault();
+		setClicked(true);
+	};
 
 	const unclickHandler = (e) => {
 		setClicked(false);
-		// window.removeEventListener('mouseup', unclickHandler)
-		// window.removeEventListener('mousemove', moveHandler)
+		window.removeEventListener('mouseup', unclickHandler);
+		window.removeEventListener('mousemove', moveHandler);
 	};
 
 	const moveHandler = (e) => {
+		e.stopPropagation();
 		if (clicked) {
-			console.log(e)
-			setContainerWidth(e.pageX);
+			if(e.clientX < 500 && e.clientX > 200) setContainerWidth(e.clientX);
 		}
 	};
 
@@ -103,10 +103,10 @@ function LayersList() {
 					<SearchIconButton>
 						<SearchRounded sx={{ fontSize: 'inherit' }} />
 					</SearchIconButton>
-					<Ty active={true} hoverEffect={true} variant="layersListHeader">
+					<Ty active hoverEffect variant="layersListHeader">
 						Layers
 					</Ty>
-					<Ty hoverEffect={true} variant="layersListHeader">
+					<Ty hoverEffect variant="layersListHeader">
 						Assets
 					</Ty>
 				</SearchIconBox>
@@ -176,11 +176,7 @@ function LayersList() {
 					<LayerRowItem item={item} leftPadding={0} />
 				))}
 			</LayersListItemsContainer>
-			<ListContainerResizer
-				id="list-container-resizer"
-				draggable
-				onMouseDown={clickHandler}
-			/>
+			<ListContainerResizer onMouseDown={clickHandler} />
 		</ListContainer>
 	);
 }

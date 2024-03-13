@@ -1,6 +1,6 @@
 import { Box, IconButton, Typography } from '@mui/material';
-import { Toolbar, ToolbarFlexItems, Ty } from './styled';
 import AcUnitIcon from '@mui/icons-material/AcUnit';
+import { Toolbar, ToolbarFlexItems, Ty } from './styled';
 
 function ToolbarComponent() {
 	return (

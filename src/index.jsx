@@ -6,9 +6,9 @@ import {
 	createTheme,
 	StyledEngineProvider,
 } from '@mui/material';
+import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 // import App from './testCode/penToolImplementation';
-import { BrowserRouter } from 'react-router-dom';
 import '@fontsource/inter'
 
 const theme = createTheme({

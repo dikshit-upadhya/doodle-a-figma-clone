@@ -134,12 +134,14 @@ export const LayerTypeIcon = styled('img')({
   width: '14px'
 })
 
-export const ListContainerResizer = styled(Box)({
+export const ListContainerResizer = styled(Box)(({theme}) => ({
 	position: 'absolute', 
 	top: 0,
 	right: -1,
-	width: '4px', 
+	width: '5px', 
 	height: '100%', 
-	background: 'red',
-	cursor: 'e-resize'
-})
+	cursor: 'e-resize',
+	'&:hover': {
+		background: theme.palette.brightBlue
+	}
+}))
