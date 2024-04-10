@@ -1,6 +1,6 @@
 import { Box, IconButton, Typography, styled } from '@mui/material';
 
-const borderWhite = '0.5px solid rgba(255,255,255, 0.1)';
+import { borderWhite } from '../../../../utils/contants';
 
 export const ListContainer = styled(Box)(({ theme, width }) => ({
 	height: `calc(100vh - 48px)`,
@@ -12,12 +12,13 @@ export const ListContainer = styled(Box)(({ theme, width }) => ({
 	flexDirection: 'column',
 }));
 
-export const ListHeaderContainer = styled(Box)(({ theme }) => ({
+export const ListHeaderContainer = styled(Box)(() => ({
 	padding: '8px 15px',
 	display: 'flex',
 	alignItems: 'center',
 	borderTop: borderWhite,
 	borderBottom: borderWhite,
+	height: '22px',
 }));
 
 export const SearchIconBox = styled(Box)({
@@ -33,20 +34,25 @@ export const SearchIconButton = styled(IconButton)({
 	padding: '2px',
 });
 
-export const Ty = styled(Typography)(({ hoverEffect, active }) => ({
-	color: hoverEffect
-		? active
-			? 'white'
-			: 'rgba(255, 255, 255, 0.7)'
-		: 'white',
-	fontWeight: active ? 'bold' : 'normal',
-	cursor: 'default',
-	userSelect: 'none',
-	'&:hover': {
-		color: 'white',
-		fontWeight: 'bold',
-	},
-}));
+export const Ty = styled(Typography)(({ hoverEffect, active }) => {
+	const getColorForTy = () => {
+		if (hoverEffect) {
+			return active ? 'white' : 'rgba(255, 255, 255, 0.7)';
+		}
+		return 'white';
+	};
+
+	return {
+		color: getColorForTy(),
+		fontWeight: active ? 'bold' : 'normal',
+		cursor: 'default',
+		userSelect: 'none',
+		'&:hover': {
+			color: 'white',
+			fontWeight: 'bold',
+		},
+	};
+});
 
 export const PageListContainer = styled(Box)({
 	borderBottom: borderWhite,
@@ -58,7 +64,7 @@ export const PageListContainerHeader = styled(Box)({
 	alignItems: 'center',
 });
 
-export const PageListItemsContainer = styled(Box)(({ theme }) => ({
+export const PageListItemsContainer = styled(Box)(() => ({
 	paddingTop: '10px',
 }));
 
@@ -98,9 +104,9 @@ export const LayersListItemsContainer = styled(Box)(({ theme }) => ({
 	flex: 1,
 	overflowY: 'scroll',
 	overflowX: 'hidden',
-  boxSizing: 'border-box',
+	boxSizing: 'border-box',
 	'&::-webkit-scrollbar': {
-		width: '12px'
+		width: '12px',
 	},
 	'&::-webkit-scrollbar-track': {
 		borderLeft: borderWhite,
@@ -109,14 +115,14 @@ export const LayersListItemsContainer = styled(Box)(({ theme }) => ({
 		borderRadius: '8px',
 		background: 'rgba(255, 255, 255, 0.18)',
 		marginLeft: '5px',
-    border: `3px solid ${theme.palette.gray}`
+		border: `3px solid ${theme.palette.gray}`,
 	},
 	'&::-webkit-scrollbar-thumb:hover': {
 		background: 'rgba(255,255,255,0.25)',
 	},
 	'&::-webkit-scrollbar-corner': {
-		display: 'none'
-	}
+		display: 'none',
+	},
 }));
 
 export const LayerItem = styled(Box)(({ theme }) => ({
@@ -130,18 +136,18 @@ export const LayerItem = styled(Box)(({ theme }) => ({
 }));
 
 export const LayerTypeIcon = styled('img')({
-  height: '14px', 
-  width: '14px'
-})
+	height: '14px',
+	width: '14px',
+});
 
-export const ListContainerResizer = styled(Box)(({theme}) => ({
-	position: 'absolute', 
+export const ListContainerResizer = styled(Box)(({ theme }) => ({
+	position: 'absolute',
 	top: 0,
 	right: -1,
-	width: '5px', 
-	height: '100%', 
+	width: '5px',
+	height: '100%',
 	cursor: 'e-resize',
 	'&:hover': {
-		background: theme.palette.brightBlue
-	}
-}))
+		background: theme.palette.brightBlue,
+	},
+}));

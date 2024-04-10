@@ -1,5 +1,5 @@
-import { Box, IconButton, Typography } from '@mui/material';
-import AcUnitIcon from '@mui/icons-material/AcUnit';
+// import { Box, IconButton, Typography } from '@mui/material';
+// import AcUnitIcon from '@mui/icons-material/AcUnit';
 import { Toolbar, ToolbarFlexItems, Ty } from './styled';
 
 function ToolbarComponent() {
@@ -17,10 +17,10 @@ function ToolbarComponent() {
 					</IconButton>
 				))} */}
 			</ToolbarFlexItems>
-			<ToolbarFlexItems sx={{flex: 1}}>
+			<ToolbarFlexItems sx={{ flex: 1 }}>
 				<Ty variant="commonText">Untitled-01</Ty>
 			</ToolbarFlexItems>
-			<ToolbarFlexItems >
+			<ToolbarFlexItems>
 				{/* {[
 					{ icon: AcUnitIcon },
 					{ icon: AcUnitIcon },

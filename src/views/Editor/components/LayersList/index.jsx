@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
 	AddRounded,
 	ArrowDropDown,
@@ -9,6 +9,7 @@ import {
 	SearchRounded,
 } from '@mui/icons-material';
 import { Box } from '@mui/material';
+import PropTypes from 'prop-types';
 import {
 	FreePagesContainer,
 	IconWrapper,
@@ -30,12 +31,12 @@ import {
 import { testLayersArr } from '../../../../testCode/testConstants';
 
 function LayerRowItem(props) {
-	const { item } = props;
+	const { item, leftPadding } = props;
 	const [childrenOpen, setChildrenOpen] = useState(false);
 
 	return (
 		<>
-			<LayerItem sx={{ paddingLeft: `${props.leftPadding}px` }}>
+			<LayerItem sx={{ paddingLeft: `${leftPadding}px` }}>
 				<IconWrapper
 					onClick={() => {
 						if (item?.children) {
@@ -58,18 +59,50 @@ function LayerRowItem(props) {
 				</Box>
 			</LayerItem>
 			{childrenOpen
-				? item?.children?.map((item) => (
-						<LayerRowItem item={item} leftPadding={props?.leftPadding + 20} />
+				? item?.children?.map((layerRowItem) => (
+						<LayerRowItem
+							item={layerRowItem}
+							leftPadding={(leftPadding || 0) + 20}
+						/>
 					))
 				: ''}
 		</>
 	);
 }
 
+LayerRowItem.propTypes = {
+	leftPadding: PropTypes.number.isRequired,
+	item: PropTypes.shape({
+		type: PropTypes.shape({
+			icon: PropTypes.node,
+		}),
+		name: PropTypes.string,
+		children: PropTypes.arrayOf({}),
+	}).isRequired,
+};
+
 function LayersList() {
 	const [isPagesDroppedDown, setIsPagesDroppedDown] = useState(true);
 	const [containerWidth, setContainerWidth] = useState(270);
 	const [clicked, setClicked] = useState(false);
+
+	const clickHandler = (e) => {
+		e.preventDefault();
+		setClicked(true);
+	};
+
+	const moveHandler = (e) => {
+		e.stopPropagation();
+		if (clicked) {
+			if (e.clientX < 500 && e.clientX > 200) setContainerWidth(e.clientX);
+		}
+	};
+
+	const unclickHandler = () => {
+		setClicked(false);
+		window.removeEventListener('mouseup', unclickHandler);
+		window.removeEventListener('mousemove', moveHandler);
+	};
 
 	useEffect(() => {
 		if (clicked) {
@@ -77,24 +110,6 @@ function LayersList() {
 			window.addEventListener('mouseup', unclickHandler);
 		}
 	}, [clicked]);
-
-	const clickHandler = (e) => {
-		e.preventDefault();
-		setClicked(true);
-	};
-
-	const unclickHandler = (e) => {
-		setClicked(false);
-		window.removeEventListener('mouseup', unclickHandler);
-		window.removeEventListener('mousemove', moveHandler);
-	};
-
-	const moveHandler = (e) => {
-		e.stopPropagation();
-		if (clicked) {
-			if(e.clientX < 500 && e.clientX > 200) setContainerWidth(e.clientX);
-		}
-	};
 
 	return (
 		<ListContainer width={containerWidth}>
@@ -166,7 +181,7 @@ function LayersList() {
 							variant="layersListTitle"
 							sx={{ marginTop: '4px', color: 'brightBlueText' }}
 						>
-							You don't need any plans!
+							{`You don't need any plans!`}
 						</Ty2>
 					</FreePagesContainer>
 				</PageListContainer>

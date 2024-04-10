@@ -95,7 +95,7 @@ function App() {
 		]);
 		setZIndex((prev) => prev + 1);
 		resetCanvas();
-		window.addEventListener('contextmenu', (e) => e.preventDefault())
+		window.addEventListener('contextmenu', (e) => e.preventDefault());
 	}, []);
 
 	const redrawEverything = () => {
@@ -146,7 +146,7 @@ function App() {
 
 	const clickedController = (e) => {
 		const [mouseX, mouseY] = getAdjustedCoordinates(e);
-		e.preventDefault()
+		e.preventDefault();
 		if (e.button === 0) {
 			setClicked(true);
 			if (currentlyHoveredSquare.id) {
@@ -443,12 +443,10 @@ function App() {
 			} else {
 				direction = 'left';
 			}
+		} else if (e.deltaY > 0) {
+			direction = 'down';
 		} else {
-			if (e.deltaY > 0) {
-				direction = 'down';
-			} else {
-				direction = 'up';
-			}
+			direction = 'up';
 		}
 		return direction;
 	}

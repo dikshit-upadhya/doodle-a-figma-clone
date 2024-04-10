@@ -12,6 +12,7 @@
 		"@testing-library/react": "^13.4.0",
 		"@testing-library/user-event": "^13.5.0",
 		"clsx": "^2.1.0",
+		"prop-types": "^15.8.1",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
 		"react-router": "^6.22.2",
@@ -22,11 +23,13 @@
 	},
 	"scripts": {
 		"start": "react-scripts start",
+		"devstart": "set PORT=3333 && react-scripts start",
 		"build": "react-scripts build",
 		"test": "react-scripts test",
 		"eject": "react-scripts eject",
+		"lintdev": "eslint . --fix",
 		"lint": "eslint . --fix --max-warnings 0",
-		"format": "prettier . --write",
+		"pretty": "prettier --write .",
 		"prepare": "husky install"
 	},
 	"eslintConfig": {
@@ -53,15 +56,16 @@
 		"eslint-config-prettier": "^9.1.0",
 		"eslint-plugin-import": "^2.25.3",
 		"eslint-plugin-jsx-a11y": "^6.5.1",
-		"eslint-plugin-only-warn": "^1.1.0",
 		"eslint-plugin-react": "^7.28.0",
 		"eslint-plugin-react-hooks": "^4.3.0",
-		"husky": "^9.0.11",
+		"husky": "^8.0.0",
 		"lint-staged": "^15.2.2",
 		"prettier": "^3.2.5"
 	},
 	"lint-staged": {
-		"*.js": "npm run lint",
-		"*.--write": "npm run format"
+		"**/*.{js,jsx}": [
+			"npm run lint",
+			"npm run pretty"
+		]
 	}
 }
