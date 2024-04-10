@@ -16,7 +16,7 @@ function ColorPropertyComponent(props) {
 				<ColorProperty />
 				<ColorValue onFocus={(e) => e.target.select()} defaultValue="00FB32" />
 			</PropertyDetails>
-			<PropertyDetails hideLeftBorder>
+			<PropertyDetails>
 				<ColorValue
 					onFocus={(e) => e.target.select()}
 					sx={{ width: '34px' }}
@@ -28,11 +28,11 @@ function ColorPropertyComponent(props) {
 }
 
 ColorPropertyComponent.propTypes = {
-	sx: PropTypes.shape({}),
+	sx: PropTypes.shape({}).isRequired,
 };
 
-ColorPropertyComponent.defaultProps = {
-	sx: {},
-};
+// ColorPropertyComponent.defaultProps = {
+// 	sx: {},
+// };
 
 export default ColorPropertyComponent;

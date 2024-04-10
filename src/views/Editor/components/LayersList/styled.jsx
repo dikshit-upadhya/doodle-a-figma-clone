@@ -34,7 +34,9 @@ export const SearchIconButton = styled(IconButton)({
 	padding: '2px',
 });
 
-export const Ty = styled(Typography)(({ hoverEffect, active }) => {
+export const Ty = styled(Typography, {
+	shouldForwardProp: (props) => props !== 'active' && props !== 'hoverEffect',
+})(({ hoverEffect, active }) => {
 	const getColorForTy = () => {
 		if (hoverEffect) {
 			return active ? 'white' : 'rgba(255, 255, 255, 0.7)';

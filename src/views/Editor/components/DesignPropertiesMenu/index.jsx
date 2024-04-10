@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Box } from '@mui/material';
 import { DgnPropContainer } from './styled';
 import {
@@ -28,9 +28,7 @@ function DesignPropertiesMenu() {
 						<Ty variant="layersListTitle">Page</Ty>
 					</Box>
 				</PageListContainerHeader>
-				{[1, 2, 3].map((_item, index) => (
-					<ColorPropertyComponent sx={index === 0 && { marginTop: '10px' }} />
-				))}
+				<ColorPropertyComponent sx={{ marginTop: '10px' }} />
 			</PageListContainer>
 		</DgnPropContainer>
 	);

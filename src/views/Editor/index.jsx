@@ -1,3 +1,4 @@
+import React from 'react';
 import Canvas from './components/Canvas';
 import DesignPropertiesMenu from './components/DesignPropertiesMenu';
 import LayersList from './components/LayersList';

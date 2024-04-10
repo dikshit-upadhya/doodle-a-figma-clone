@@ -61,6 +61,7 @@ function LayerRowItem(props) {
 			{childrenOpen
 				? item?.children?.map((layerRowItem) => (
 						<LayerRowItem
+							key={layerRowItem.name}
 							item={layerRowItem}
 							leftPadding={(leftPadding || 0) + 20}
 						/>
@@ -77,7 +78,7 @@ LayerRowItem.propTypes = {
 			icon: PropTypes.node,
 		}),
 		name: PropTypes.string,
-		children: PropTypes.arrayOf({}),
+		children: PropTypes.arrayOf(PropTypes.shape({})),
 	}).isRequired,
 };
 
@@ -160,7 +161,7 @@ function LayersList() {
 							{ pageName: 3 },
 							{ pageName: 4 },
 						].map((item) => (
-							<PageListItem>
+							<PageListItem key={item.pageName}>
 								<IconWrapper>
 									{item.pageName === 1 && (
 										<CheckRounded sx={{ fontSize: '14px', color: 'white' }} />
@@ -188,7 +189,7 @@ function LayersList() {
 			)}
 			<LayersListItemsContainer>
 				{testLayersArr.map((item) => (
-					<LayerRowItem item={item} leftPadding={0} />
+					<LayerRowItem key={item.name} item={item} leftPadding={0} />
 				))}
 			</LayersListItemsContainer>
 			<ListContainerResizer onMouseDown={clickHandler} />

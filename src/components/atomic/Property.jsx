@@ -11,7 +11,7 @@ export const PropertyContainer = styled(Box)(() => ({
 		borderTop: borderWhite,
 		borderBottom: borderWhite,
 	},
-	'&:hover > div:nth-child(1)': {
+	'&:hover > div:nth-of-type(1)': {
 		padding: '4.5px',
 		border: borderWhite,
 	},
