@@ -1,5 +1,5 @@
 import { Box, styled } from '@mui/material';
-import { borderWhite } from '../../../../utils/contants';
+import { DRAWER_WHITE_BORDER } from '../../../../utils/contants';
 
 export const DgnPropContainer = styled(Box)(({ theme, width }) => ({
 	height: `calc(100vh - 48px)`,
@@ -7,10 +7,10 @@ export const DgnPropContainer = styled(Box)(({ theme, width }) => ({
 	top: '48px',
 	right: 0,
 	width: `${width}px`,
-	borderTop: borderWhite,
+	borderTop: DRAWER_WHITE_BORDER,
 	background: theme.palette.gray,
 }));
 
 export const DgnPropContent = styled(Box)(() => ({
-	borderTop: borderWhite,
+	borderTop: DRAWER_WHITE_BORDER,
 }));

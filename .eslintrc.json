@@ -12,6 +12,8 @@
 	"rules": {
 		"semi": 0,
 		"comma-dangle": 0,
+		"no-bitwise": 0,
+		"no-useless-escape": 0,
 		"react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }]
 	}
 }

@@ -9,8 +9,14 @@ import {
 } from '../LayersList/styled';
 import ColorPropertyComponent from '../../../../components/ui/ColorProperty';
 
+const INITIAL_COLOR = {
+	hex: '#ffffffff',
+	rgb: { r: 255, g: 255, b: 255, a: 1 },
+};
+
 function DesignPropertiesMenu() {
 	const [containerWidth] = useState(270);
+	const [color, setColor] = useState(INITIAL_COLOR);
 
 	return (
 		<DgnPropContainer width={containerWidth}>
@@ -28,7 +34,21 @@ function DesignPropertiesMenu() {
 						<Ty variant="layersListTitle">Page</Ty>
 					</Box>
 				</PageListContainerHeader>
-				<ColorPropertyComponent sx={{ marginTop: '10px' }} />
+				{/* <button
+					onClick={() => {
+						setColor({
+							hex: '#462a2aba',
+							rgb: { r: 70, g: 42, b: 42, a: 0.72 },
+						});
+					}}
+				>
+					click
+				</button> */}
+				<ColorPropertyComponent
+					color={color}
+					setColor={setColor}
+					sx={{ marginTop: '10px' }}
+				/>
 			</PageListContainer>
 		</DgnPropContainer>
 	);

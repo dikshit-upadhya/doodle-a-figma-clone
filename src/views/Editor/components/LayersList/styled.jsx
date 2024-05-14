@@ -1,6 +1,6 @@
 import { Box, IconButton, Typography, styled } from '@mui/material';
 
-import { borderWhite } from '../../../../utils/contants';
+import { DRAWER_WHITE_BORDER } from '../../../../utils/contants';
 
 export const ListContainer = styled(Box)(({ theme, width }) => ({
 	height: `calc(100vh - 48px)`,
@@ -16,8 +16,8 @@ export const ListHeaderContainer = styled(Box)(() => ({
 	padding: '8px 15px',
 	display: 'flex',
 	alignItems: 'center',
-	borderTop: borderWhite,
-	borderBottom: borderWhite,
+	borderTop: DRAWER_WHITE_BORDER,
+	borderBottom: DRAWER_WHITE_BORDER,
 	height: '22px',
 }));
 
@@ -57,7 +57,7 @@ export const Ty = styled(Typography, {
 });
 
 export const PageListContainer = styled(Box)({
-	borderBottom: borderWhite,
+	borderBottom: DRAWER_WHITE_BORDER,
 	padding: '8px 15px 15px 15px',
 });
 
@@ -111,7 +111,7 @@ export const LayersListItemsContainer = styled(Box)(({ theme }) => ({
 		width: '12px',
 	},
 	'&::-webkit-scrollbar-track': {
-		borderLeft: borderWhite,
+		borderLeft: DRAWER_WHITE_BORDER,
 	},
 	'&::-webkit-scrollbar-thumb': {
 		borderRadius: '8px',
