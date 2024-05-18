@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Box } from '@mui/material';
+import { useDispatch, useSelector } from 'react-redux';
 import { DgnPropContainer } from './styled';
 import {
 	ListHeaderContainer,
@@ -8,15 +9,18 @@ import {
 	Ty,
 } from '../LayersList/styled';
 import ColorPropertyComponent from '../../../../components/ui/ColorProperty';
-
-const INITIAL_COLOR = {
-	hex: '#ffffffff',
-	rgb: { r: 255, g: 255, b: 255, a: 1 },
-};
+import { setPageColor } from '../../../../store/reducers/pages';
 
 function DesignPropertiesMenu() {
+	const dispatch = useDispatch();
+	// redux states
+	const { activePage } = useSelector((state) => state.pages);
+
+	// local states
 	const [containerWidth] = useState(270);
-	const [color, setColor] = useState(INITIAL_COLOR);
+
+	// methods
+	const changePageColor = (colorObj) => dispatch(setPageColor(colorObj));
 
 	return (
 		<DgnPropContainer width={containerWidth}>
@@ -34,19 +38,9 @@ function DesignPropertiesMenu() {
 						<Ty variant="layersListTitle">Page</Ty>
 					</Box>
 				</PageListContainerHeader>
-				{/* <button
-					onClick={() => {
-						setColor({
-							hex: '#462a2aba',
-							rgb: { r: 70, g: 42, b: 42, a: 0.72 },
-						});
-					}}
-				>
-					click
-				</button> */}
 				<ColorPropertyComponent
-					color={color}
-					setColor={setColor}
+					color={activePage.pageColor}
+					setColor={changePageColor}
 					sx={{ marginTop: '10px' }}
 				/>
 			</PageListContainer>

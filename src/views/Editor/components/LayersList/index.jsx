@@ -1,20 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import {
 	AddRounded,
-	ArrowDropDown,
-	ArrowRight,
 	CheckRounded,
 	KeyboardArrowDown,
 	KeyboardArrowUp,
 	SearchRounded,
 } from '@mui/icons-material';
 import { Box } from '@mui/material';
-import PropTypes from 'prop-types';
+import { useDispatch, useSelector } from 'react-redux';
 import {
 	FreePagesContainer,
 	IconWrapper,
-	LayerItem,
-	LayerTypeIcon,
 	LayersListItemsContainer,
 	ListContainer,
 	ListContainerResizer,
@@ -29,81 +25,50 @@ import {
 	Ty2,
 } from './styled';
 import { testLayersArr } from '../../../../testCode/testConstants';
-
-function LayerRowItem(props) {
-	const { item, leftPadding } = props;
-	const [childrenOpen, setChildrenOpen] = useState(false);
-
-	return (
-		<>
-			<LayerItem sx={{ paddingLeft: `${leftPadding}px` }}>
-				<IconWrapper
-					onClick={() => {
-						if (item?.children) {
-							setChildrenOpen((prev) => !prev);
-						}
-					}}
-				>
-					{item?.children &&
-						(childrenOpen ? (
-							<ArrowDropDown sx={{ fontSize: '14px' }} />
-						) : (
-							<ArrowRight sx={{ fontSize: '14px' }} />
-						))}
-				</IconWrapper>
-				<Box sx={{ display: 'flex', gap: '10px' }}>
-					<LayerTypeIcon src={item.type.icon} />
-					<Ty2 noWrap variant="layersListText">
-						{item?.name}
-					</Ty2>
-				</Box>
-			</LayerItem>
-			{childrenOpen
-				? item?.children?.map((layerRowItem) => (
-						<LayerRowItem
-							key={layerRowItem.name}
-							item={layerRowItem}
-							leftPadding={(leftPadding || 0) + 20}
-						/>
-					))
-				: ''}
-		</>
-	);
-}
-
-LayerRowItem.propTypes = {
-	leftPadding: PropTypes.number.isRequired,
-	item: PropTypes.shape({
-		type: PropTypes.shape({
-			icon: PropTypes.node,
-		}),
-		name: PropTypes.string,
-		children: PropTypes.arrayOf(PropTypes.shape({})),
-	}).isRequired,
-};
+import {
+	addPage,
+	deletePage,
+	setActivePage,
+} from '../../../../store/reducers/pages';
+import LayerRowItem from './components/layerRowItem';
+import { openContextMenu } from '../../../../store/reducers/globalContextMenu';
 
 function LayersList() {
+	const dispatch = useDispatch();
+	const { pages, activePage } = useSelector((state) => state.pages);
+
+	// local states
 	const [isPagesDroppedDown, setIsPagesDroppedDown] = useState(true);
 	const [containerWidth, setContainerWidth] = useState(270);
 	const [clicked, setClicked] = useState(false);
 
+	// local methods
 	const clickHandler = (e) => {
 		e.preventDefault();
 		setClicked(true);
 	};
-
 	const moveHandler = (e) => {
 		e.stopPropagation();
 		if (clicked) {
 			if (e.clientX < 500 && e.clientX > 200) setContainerWidth(e.clientX);
 		}
 	};
-
 	const unclickHandler = () => {
 		setClicked(false);
 		window.removeEventListener('mouseup', unclickHandler);
 		window.removeEventListener('mousemove', moveHandler);
 	};
+
+	const constructContextualMenuContent = (pageId) => [
+		{ title: 'Rename' },
+		{ title: 'Duplicate', breakAfter: true },
+		{
+			title: 'Delete',
+			onClick: () => {
+				dispatch(deletePage({ pageId }));
+			},
+		},
+	];
 
 	useEffect(() => {
 		if (clicked) {
@@ -132,7 +97,7 @@ function LayersList() {
 						setIsPagesDroppedDown((prev) => !prev);
 					}}
 				>
-					<Ty variant="layersListHeader">Page 1</Ty>
+					<Ty variant="layersListHeader">{activePage.name}</Ty>
 					<SearchIconButton>
 						{isPagesDroppedDown ? (
 							<KeyboardArrowUp sx={{ fontSize: '18px' }} />
@@ -149,26 +114,38 @@ function LayersList() {
 							<Ty variant="layersListTitle">Pages</Ty>
 						</Box>
 						<Box>
-							<SearchIconButton>
+							<SearchIconButton
+								onClick={() => {
+									dispatch(addPage());
+								}}
+							>
 								<AddRounded sx={{ fontSize: '18px' }} />
 							</SearchIconButton>
 						</Box>
 					</PageListContainerHeader>
 					<PageListItemsContainer>
-						{[
-							{ pageName: 1 },
-							{ pageName: 2 },
-							{ pageName: 3 },
-							{ pageName: 4 },
-						].map((item) => (
-							<PageListItem key={item.pageName}>
+						{pages?.map((item) => (
+							<PageListItem
+								onContextMenu={(event) => {
+									dispatch(
+										openContextMenu({
+											event,
+											menuContent: constructContextualMenuContent(item.id),
+										})
+									);
+								}}
+								onClick={() => {
+									dispatch(setActivePage({ pageId: item.id }));
+								}}
+								key={item.name}
+							>
 								<IconWrapper>
-									{item.pageName === 1 && (
+									{item.id === activePage.id && (
 										<CheckRounded sx={{ fontSize: '14px', color: 'white' }} />
 									)}
 								</IconWrapper>
 								<Ty variant="layersListTitle" sx={{ flex: 1 }}>
-									Page {item.pageName}
+									{item.name}
 								</Ty>
 							</PageListItem>
 						))}
