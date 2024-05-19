@@ -9,11 +9,18 @@ const globalContextMenuSlice = createSlice({
 	},
 	reducers: {
 		openContextMenu: (state, { payload: { event, menuContent, anchor } }) => {
+			const rect = event.currentTarget?.getBoundingClientRect();
 			if (menuContent && menuContent.length > 0) {
 				state.active = true;
 				switch (anchor) {
 					case 'BOTTOM':
-						state.coordinates = { top: event.clientY, left: event.clientX };
+						state.coordinates = { top: rect.bottom, left: rect.left };
+						break;
+					case 'RIGHT':
+						state.coordinates = { top: rect.top, left: rect.right };
+						break;
+					case 'LEFT':
+						state.coordinates = { top: rect.top, right: rect.left };
 						break;
 					default:
 						state.coordinates = { top: event.clientY, left: event.clientX };

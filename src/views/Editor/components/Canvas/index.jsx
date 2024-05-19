@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { CanvasWrapper } from './styled';
+import { openContextMenu } from '../../../../store/reducers/globalContextMenu';
+import { getMenuForCanvas } from '../../../../common/globalMenuHandlers';
 
 const pointerEnum = {
 	default: 'url(cursor.png), auto',
@@ -29,6 +31,7 @@ Object.keys(pointerEnum).forEach((i) => {
 });
 
 function Canvas() {
+	const dispatch = useDispatch();
 	// redux status
 	const { activePage } = useSelector((state) => state.pages);
 	// local states
@@ -553,6 +556,16 @@ function Canvas() {
 		redrawEverything();
 	};
 
+	const contextMenuHandler = (event) => {
+		dispatch(
+			openContextMenu({
+				event,
+				menuContent: getMenuForCanvas(),
+			})
+		);
+		event.preventDefault();
+	};
+
 	return (
 		<CanvasWrapper sx={{ cursor }}>
 			<canvas
@@ -562,6 +575,7 @@ function Canvas() {
 				onMouseMove={moveHandler}
 				// onScroll={scrollHandler}
 				onWheel={scrollHandler}
+				onContextMenu={contextMenuHandler}
 			/>
 		</CanvasWrapper>
 	);

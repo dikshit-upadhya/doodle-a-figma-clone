@@ -12,7 +12,7 @@ const store = configureStore({
 			serializableCheck: {
 				ignoredActions: ['globalContextMenu/openContextMenu'],
 				// ignoredActionPaths: ['payload.event'],
-				// ignoredPaths: ['payload.event'],
+				ignoredPaths: ['globalContextMenu'],
 			},
 		}),
 });

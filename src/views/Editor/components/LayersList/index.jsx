@@ -117,6 +117,7 @@ function LayersList() {
 										openContextMenu({
 											event,
 											menuContent: getMenuForPage(item.id),
+											anchor: 'RIGHT',
 										})
 									);
 								}}
