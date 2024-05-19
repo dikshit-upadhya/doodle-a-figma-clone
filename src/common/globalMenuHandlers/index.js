@@ -46,3 +46,20 @@ export const getMenuForCanvas = () => [
 	basicMenuStruct({ title: 'Copy', disabled: true }),
 	basicMenuStruct({ title: 'Paste Here', disabled: true }),
 ];
+
+export const getMenuForFrame = () => [
+	basicMenuStruct({ title: 'Frame', iconBefore: '' }),
+	basicMenuStruct({ title: 'Section', iconBefore: '' }),
+];
+export const getMenuForRectangle = () => [
+	basicMenuStruct({ title: 'Rectangle', iconBefore: '' }),
+	basicMenuStruct({ title: 'Line', iconBefore: '' }),
+	basicMenuStruct({ title: 'Arrow', iconBefore: '' }),
+	basicMenuStruct({ title: 'Eclipse', iconBefore: '' }),
+	basicMenuStruct({ title: 'Place Image', iconBefore: '' }),
+];
+
+export const getMenuForPen = () => [
+	basicMenuStruct({ title: 'Pen', iconBefore: '' }),
+	basicMenuStruct({ title: 'Pencil', iconBefore: '' }),
+];

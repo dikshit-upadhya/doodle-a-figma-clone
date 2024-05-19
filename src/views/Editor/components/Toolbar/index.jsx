@@ -19,7 +19,12 @@ import TYPOGRAPHY_SVG from '../../../../assets/Toolbar/typography.svg';
 import HAND_SVG from '../../../../assets/Toolbar/hand.svg';
 import COMMENT_SVG from '../../../../assets/Toolbar/comment.svg';
 import { openContextMenu } from '../../../../store/reducers/globalContextMenu';
-import { getMenuForMainMenu } from '../../../../common/globalMenuHandlers';
+import {
+	getMenuForFrame,
+	getMenuForMainMenu,
+	getMenuForPen,
+	getMenuForRectangle,
+} from '../../../../common/globalMenuHandlers';
 
 function ToolbarComponent() {
 	const dispatch = useDispatch();
@@ -52,10 +57,10 @@ function ToolbarComponent() {
 					</Box>
 				</ToolItems>
 				{[
-					{ icon: MOUSE_SVG, menuContent: [], active: true },
-					{ icon: FRAME_SVG, menuContent: [] },
-					{ icon: RECTANGLE_SVG, menuContent: [] },
-					{ icon: PEN_SVG, menuContent: [] },
+					{ icon: MOUSE_SVG },
+					{ icon: FRAME_SVG, menuContent: getMenuForFrame(), active: true },
+					{ icon: RECTANGLE_SVG, menuContent: getMenuForRectangle() },
+					{ icon: PEN_SVG, menuContent: getMenuForPen() },
 					{ icon: TYPOGRAPHY_SVG },
 					{ icon: HAND_SVG },
 					{ icon: COMMENT_SVG },
@@ -65,7 +70,11 @@ function ToolbarComponent() {
 						arrow={Boolean(toolbarItem.menuContent)}
 						onClick={(event) => {
 							dispatch(
-								openContextMenu({ event, menuContent: toolbarItem.menuContent })
+								openContextMenu({
+									event,
+									menuContent: toolbarItem.menuContent,
+									anchor: 'BOTTOM',
+								})
 							);
 						}}
 					>
