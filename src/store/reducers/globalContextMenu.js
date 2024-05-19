@@ -8,10 +8,19 @@ const globalContextMenuSlice = createSlice({
 		menuContent: [],
 	},
 	reducers: {
-		openContextMenu: (state, { payload: { event, menuContent } }) => {
-			state.active = true;
-			state.coordinates = { top: event.clientY, left: event.clientX };
-			state.menuContent = menuContent;
+		openContextMenu: (state, { payload: { event, menuContent, anchor } }) => {
+			if (menuContent && menuContent.length > 0) {
+				state.active = true;
+				switch (anchor) {
+					case 'BOTTOM':
+						state.coordinates = { top: event.clientY, left: event.clientX };
+						break;
+					default:
+						state.coordinates = { top: event.clientY, left: event.clientX };
+						break;
+				}
+				state.menuContent = menuContent;
+			}
 		},
 		closeContextMenu: (state) => {
 			state.active = false;

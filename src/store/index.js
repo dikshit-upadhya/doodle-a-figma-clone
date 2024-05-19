@@ -7,6 +7,14 @@ const store = configureStore({
 		pages: pagesReducer,
 		globalContextMenu: globalContextMenuReducer,
 	},
+	middleware: (getDefaultMiddleware) =>
+		getDefaultMiddleware({
+			serializableCheck: {
+				ignoredActions: ['globalContextMenu/openContextMenu'],
+				// ignoredActionPaths: ['payload.event'],
+				// ignoredPaths: ['payload.event'],
+			},
+		}),
 });
 
 export default store;

@@ -24,6 +24,11 @@ const pageSlice = createSlice({
 		},
 		deletePage: (state, { payload: { pageId } }) => {
 			state.pages = state.pages.filter((pageEle) => pageEle.id !== pageId);
+			if (state.activePage.id === pageId) {
+				if (state.pages.length > 1) {
+					state.activePage = state.pages[0];
+				}
+			}
 		},
 		setActivePage: (state, { payload: { pageId } }) => {
 			const pageWithPageId = state.pages.find((i) => i.id === pageId);

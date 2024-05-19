@@ -28,16 +28,18 @@ const MenuWrapper = styled(Box)(({ theme, coordinates }) => ({
 
 const MenuItem = styled(ButtonBase, {
 	shouldForwardProp: (props) => props !== 'lastItem',
-})(({ theme, lastItem }) => ({
+})(({ theme, lastItem, disabled }) => ({
 	padding: lastItem ? '4px 14px' : '4px 14px',
-	color: 'white',
+	color: disabled ? 'rgba(255, 255, 255, 0.4)' : 'white',
 	width: '100%',
 	zIndex: 1000,
 	display: 'flex',
 	justifyContent: 'left',
-	'&:hover': {
-		background: theme.palette.brightBlue,
-	},
+	...(!disabled && {
+		'&:hover': {
+			background: theme.palette.brightBlue,
+		},
+	}),
 }));
 
 function GlobalContextMenu() {
@@ -55,6 +57,7 @@ function GlobalContextMenu() {
 				{menuContent.map((menuItem, index) => (
 					<>
 						<MenuItem
+							disabled={menuItem.disabled}
 							onClick={() => {
 								if (menuItem.onClick) menuItem.onClick();
 								dispatch(closeContextMenu());

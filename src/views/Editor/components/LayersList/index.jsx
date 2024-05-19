@@ -25,13 +25,10 @@ import {
 	Ty2,
 } from './styled';
 import { testLayersArr } from '../../../../testCode/testConstants';
-import {
-	addPage,
-	deletePage,
-	setActivePage,
-} from '../../../../store/reducers/pages';
+import { addPage, setActivePage } from '../../../../store/reducers/pages';
 import LayerRowItem from './components/layerRowItem';
 import { openContextMenu } from '../../../../store/reducers/globalContextMenu';
+import { getMenuForPage } from '../../../../common/globalMenuHandlers';
 
 function LayersList() {
 	const dispatch = useDispatch();
@@ -58,17 +55,6 @@ function LayersList() {
 		window.removeEventListener('mouseup', unclickHandler);
 		window.removeEventListener('mousemove', moveHandler);
 	};
-
-	const constructContextualMenuContent = (pageId) => [
-		{ title: 'Rename' },
-		{ title: 'Duplicate', breakAfter: true },
-		{
-			title: 'Delete',
-			onClick: () => {
-				dispatch(deletePage({ pageId }));
-			},
-		},
-	];
 
 	useEffect(() => {
 		if (clicked) {
@@ -130,7 +116,7 @@ function LayersList() {
 									dispatch(
 										openContextMenu({
 											event,
-											menuContent: constructContextualMenuContent(item.id),
+											menuContent: getMenuForPage(item.id),
 										})
 									);
 								}}
