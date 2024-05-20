@@ -1,4 +1,4 @@
-import { Box } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import {
@@ -6,8 +6,8 @@ import {
 	ToolImage,
 	ToolItems,
 	Toolbar,
-	ToolbarFlexItems,
 	ToolbarLeft,
+	ToolbarRight,
 	Ty,
 } from './styled';
 import LOGO_SVG from '../../../../assets/Toolbar/mainLogo.svg';
@@ -25,6 +25,8 @@ import {
 	getMenuForPen,
 	getMenuForRectangle,
 } from '../../../../common/globalMenuHandlers';
+import BrightBlueButton from '../../../../components/atomic/Buttons/BrightBlueButton';
+import PersonAvatar from '../../../../components/atomic/Avatar/avatar';
 
 function ToolbarComponent() {
 	const dispatch = useDispatch();
@@ -97,18 +99,24 @@ function ToolbarComponent() {
 			<Box>
 				<Ty variant="commonText">Untitled-01</Ty>
 			</Box>
-			<ToolbarFlexItems>
-				{/* {[
-					{ icon: AcUnitIcon },
-					{ icon: AcUnitIcon },
-					{ icon: AcUnitIcon },
-					{ icon: AcUnitIcon },
-				].map((item) => (
-					<IconButton>
-						<item.icon />
-					</IconButton>
-				))} */}
-			</ToolbarFlexItems>
+			<ToolbarRight>
+				<PersonAvatar content={{ type: 'text', content: 'D' }} />
+				<BrightBlueButton title="Share" />
+				<ToolItems width="60px">
+					<Typography
+						textAlign="left"
+						variant="toolbarText"
+						color="white"
+						noWrap
+					>
+						100%
+					</Typography>
+					<KeyboardArrowDownRoundedIconStyled
+						sx={{ marginLeft: '4px' }}
+						position="static"
+					/>
+				</ToolItems>
+			</ToolbarRight>
 		</Toolbar>
 	);
 }

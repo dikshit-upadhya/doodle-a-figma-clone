@@ -53,6 +53,16 @@ const theme = createTheme({
 			fontFamily: 'Inter',
 			fontWeight: '500',
 		},
+		toolbarText: {
+			fontSize: '12px',
+			fontFamily: 'Inter',
+			fontWeight: '400',
+		},
+		buttonText: {
+			fontSize: '12px',
+			fontFamily: 'Inter',
+			fontWeight: '600',
+		},
 	},
 });
 
