@@ -1,14 +1,8 @@
 import React from 'react';
-import { AppRoutes } from './routes';
-import GlobalContextMenu from './components/ui/GlobalMenu';
+import AppRoutes from './routes';
 
 function App() {
-	return (
-		<div>
-			<GlobalContextMenu />
-			<AppRoutes />
-		</div>
-	);
+	return <AppRoutes />;
 }
 
 export default App;
