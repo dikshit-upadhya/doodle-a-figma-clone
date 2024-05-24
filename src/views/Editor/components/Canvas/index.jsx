@@ -4,6 +4,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import { CanvasWrapper } from './styled';
 import { openContextMenu } from '../../../../store/reducers/globalContextMenu';
 import { getMenuForCanvas } from '../../../../common/globalMenuHandlers';
+import {
+	resetTransform,
+	translateDown,
+	translateLeft,
+	translateRight,
+	translateUp,
+} from '../../../../store/reducers/canvas';
 
 const pointerEnum = {
 	default: 'url(cursor.png), auto',
@@ -34,6 +41,7 @@ function Canvas() {
 	const dispatch = useDispatch();
 	// redux status
 	const { activePage } = useSelector((state) => state.pages);
+	const { transform: canvasTransform } = useSelector((state) => state.canvas);
 	// local states
 	const [clicked, setClicked] = useState(false);
 	const [squares, setSquares] = useState([]);
@@ -49,14 +57,6 @@ function Canvas() {
 		type: '',
 	});
 	const [cursor, setCursor] = useState(pointerEnum.default);
-	const [canvasTransform, setCanvasTransform] = useState({
-		a: 1,
-		b: 0,
-		c: 0,
-		d: 1,
-		e: 0,
-		f: 0,
-	});
 
 	// refs
 	const canvasRef = useRef();
@@ -65,18 +65,20 @@ function Canvas() {
 	// methods
 	const resetCanvas = () => {
 		const { r, g, b, a } = activePage.pageColor.rgb;
+		const currentScale = canvasTransform.a;
+
 		canvasContext.current.clearRect(
-			-canvasTransform.e,
-			-canvasTransform.f,
-			canvasRef.current.width + Math.abs(canvasTransform.e),
-			canvasRef.current.height + Math.abs(canvasTransform.f)
+			-canvasTransform.e / currentScale,
+			-canvasTransform.f / currentScale,
+			canvasRef.current.width / currentScale,
+			canvasRef.current.height / currentScale
 		);
 		canvasContext.current.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`;
 		canvasContext.current.fillRect(
-			-canvasTransform.e,
-			-canvasTransform.f,
-			canvasRef.current.width + Math.abs(canvasTransform.e),
-			canvasRef.current.height + Math.abs(canvasTransform.f)
+			-canvasTransform.e / currentScale,
+			-canvasTransform.f / currentScale,
+			canvasRef.current.width / currentScale,
+			canvasRef.current.height / currentScale
 		);
 	};
 
@@ -188,8 +190,10 @@ function Canvas() {
 		const rect = canvasRef.current.getBoundingClientRect();
 
 		// Calculate mouse coordinates relative to the canvas
-		const mouseX = e.clientX - rect.left - canvasTransform.e;
-		const mouseY = e.clientY - rect.top - canvasTransform.f;
+		const mouseX =
+			(e.clientX - rect.left - canvasTransform.e) / canvasTransform.a;
+		const mouseY =
+			(e.clientY - rect.top - canvasTransform.f) / canvasTransform.d;
 		return [mouseX, mouseY];
 	};
 
@@ -504,54 +508,19 @@ function Canvas() {
 		const direction = detectMouseWheelDirection(e);
 		switch (direction) {
 			case 'down':
-				setCanvasTransform((prev) => ({
-					a: prev.a,
-					b: prev.b,
-					c: prev.c,
-					d: prev.d,
-					e: prev.e,
-					f: prev.f - 50,
-				}));
+				dispatch(translateDown());
 				break;
 			case 'up':
-				setCanvasTransform((prev) => ({
-					a: prev.a,
-					b: prev.b,
-					c: prev.c,
-					d: prev.d,
-					e: prev.e,
-					f: prev.f + 50,
-				}));
+				dispatch(translateUp());
 				break;
 			case 'right':
-				setCanvasTransform((prev) => ({
-					a: prev.a,
-					b: prev.b,
-					c: prev.c,
-					d: prev.d,
-					e: prev.e - 50,
-					f: prev.f,
-				}));
+				dispatch(translateRight());
 				break;
 			case 'left':
-				setCanvasTransform((prev) => ({
-					a: prev.a,
-					b: prev.b,
-					c: prev.c,
-					d: prev.d,
-					e: prev.e + 50,
-					f: prev.f,
-				}));
+				dispatch(translateLeft());
 				break;
 			default:
-				setCanvasTransform({
-					a: 1,
-					b: 0,
-					c: 0,
-					d: 1,
-					e: 0,
-					f: 0,
-				});
+				dispatch(resetTransform());
 		}
 		redrawEverything();
 	};
