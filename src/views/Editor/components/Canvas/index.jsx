@@ -6,10 +6,13 @@ import { openContextMenu } from '../../../../store/reducers/globalContextMenu';
 import { getMenuForCanvas } from '../../../../common/globalMenuHandlers';
 import {
 	resetTransform,
+	setSquares as setSquaresRedux,
 	translateDown,
 	translateLeft,
 	translateRight,
 	translateUp,
+	zoomIn,
+	zoomOut,
 } from '../../../../store/reducers/canvas';
 
 const pointerEnum = {
@@ -41,10 +44,13 @@ function Canvas() {
 	const dispatch = useDispatch();
 	// redux status
 	const { activePage } = useSelector((state) => state.pages);
-	const { transform: canvasTransform } = useSelector((state) => state.canvas);
+	const { transform: canvasTransform, squares } = useSelector(
+		(state) => state.canvas
+	);
 	// local states
 	const [clicked, setClicked] = useState(false);
-	const [squares, setSquares] = useState([]);
+	// const [squares, setSquares] = useState([]);
+
 	const [zIndex, setZIndex] = useState(1);
 	const [activeSquare, setActiveSquare] = useState([]);
 	const [currentlyHoveredSquare, setCurrentlyHoveredSquare] = useState({
@@ -63,20 +69,33 @@ function Canvas() {
 	const canvasContext = useRef(null);
 
 	// methods
+	const setSquares = (payload) => {
+		if (typeof payload === 'function') {
+			const newObj = [...squares].map((i) => {
+				const obj = { ...i };
+				return obj;
+			});
+			const reqd = payload(newObj);
+			dispatch(setSquaresRedux(reqd));
+		} else {
+			dispatch(setSquaresRedux(payload));
+		}
+	};
+
 	const resetCanvas = () => {
 		const { r, g, b, a } = activePage.pageColor.rgb;
 		const currentScale = canvasTransform.a;
 
 		canvasContext.current.clearRect(
-			-canvasTransform.e / currentScale,
-			-canvasTransform.f / currentScale,
+			-canvasTransform.e,
+			-canvasTransform.f,
 			canvasRef.current.width / currentScale,
 			canvasRef.current.height / currentScale
 		);
 		canvasContext.current.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`;
 		canvasContext.current.fillRect(
-			-canvasTransform.e / currentScale,
-			-canvasTransform.f / currentScale,
+			-canvasTransform.e,
+			-canvasTransform.f,
 			canvasRef.current.width / currentScale,
 			canvasRef.current.height / currentScale
 		);
@@ -88,32 +107,36 @@ function Canvas() {
 		canvasContext.current = context;
 		canvasRef.current.width = window.innerWidth;
 		canvasRef.current.height = window.innerHeight;
+		const rect = {
+			width: window.innerWidth,
+			height: window.innerHeight,
+		};
 		setSquares([
 			{
 				id: uuid(),
-				x: 679,
-				y: 266,
+				x: rect.width / 2 - 50,
+				y: rect.height / 2 - 50,
 				width: 100,
 				height: 100,
 				controlPoints: [
 					{
-						x: 679,
-						y: 266,
+						x: rect.width / 2 - 50,
+						y: rect.height / 2 - 50,
 						type: controlPoints.TOP_LEFT,
 					},
 					{
-						x: 779,
-						y: 266,
+						x: rect.width / 2 + 50,
+						y: rect.height / 2 - 50,
 						type: controlPoints.TOP_RIGHT,
 					},
 					{
-						x: 679,
-						y: 366,
+						x: rect.width / 2 - 50,
+						y: rect.height / 2 + 50,
 						type: controlPoints.BOTTOM_LEFT,
 					},
 					{
-						x: 779,
-						y: 366,
+						x: rect.width / 2 + 50,
+						y: rect.height / 2 + 50,
 						type: controlPoints.BOTTOM_RIGHT,
 					},
 				],
@@ -182,20 +205,45 @@ function Canvas() {
 
 	useEffect(() => {
 		const { a, b, c, d, e, f } = canvasTransform;
-		canvasContext.current.setTransform(a, b, c, d, e, f);
+		canvasContext.current.setTransform(a, b, c, d, e * a, f * a);
 		redrawEverything();
 	}, [canvasTransform]);
 
-	const getAdjustedCoordinates = (e) => {
+	const getAdjustedCoordinates = (event) => {
 		const rect = canvasRef.current.getBoundingClientRect();
 
+		const { a, d, e, f } = canvasTransform;
 		// Calculate mouse coordinates relative to the canvas
-		const mouseX =
-			(e.clientX - rect.left - canvasTransform.e) / canvasTransform.a;
-		const mouseY =
-			(e.clientY - rect.top - canvasTransform.f) / canvasTransform.d;
+		const mouseX = (event.clientX - rect.left) / a - e;
+		const mouseY = (event.clientY - rect.top) / d - f;
 		return [mouseX, mouseY];
 	};
+
+	// 	const getAdjustedCoordinates = (event) => {
+	//     const rect = canvasRef.current.getBoundingClientRect();
+
+	//     // Extract the transformation matrix values
+	//     const { a, b, c, d, e, f } = canvasTransform;
+
+	//     // Calculate the inverse transformation matrix
+	//     const det = a * d - b * c;
+	//     const invA = d / det;
+	//     const invB = -b / det;
+	//     const invC = -c / det;
+	//     const invD = a / det;
+	//     const invE = (c * f - d * e) / det;
+	//     const invF = (b * e - a * f) / det;
+
+	//     // Calculate mouse coordinates relative to the canvas
+	//     const mouseX = event.clientX - rect.left;
+	//     const mouseY = event.clientY - rect.top;
+
+	//     // Apply the inverse transformation matrix to the mouse coordinates
+	//     const adjustedX = invA * mouseX + invC * mouseY + invE;
+	//     const adjustedY = invB * mouseX + invD * mouseY + invF;
+
+	//     return [adjustedX, adjustedY];
+	// };
 
 	const clickedController = (e) => {
 		const [mouseX, mouseY] = getAdjustedCoordinates(e);
@@ -504,23 +552,46 @@ function Canvas() {
 		return direction;
 	}
 
-	const scrollHandler = (e) => {
-		const direction = detectMouseWheelDirection(e);
-		switch (direction) {
-			case 'down':
-				dispatch(translateDown());
-				break;
-			case 'up':
-				dispatch(translateUp());
-				break;
-			case 'right':
-				dispatch(translateRight());
-				break;
-			case 'left':
-				dispatch(translateLeft());
-				break;
-			default:
-				dispatch(resetTransform());
+	const scrollHandler = (event) => {
+		const direction = detectMouseWheelDirection(event);
+		const [mouseX, mouseY] = getAdjustedCoordinates(event);
+		if (event.ctrlKey) {
+			if (direction === 'up') {
+				dispatch(
+					zoomIn({
+						event: {
+							clientX: mouseX,
+							clientY: mouseY,
+						},
+					})
+				);
+			} else {
+				dispatch(
+					zoomOut({
+						event: {
+							clientX: mouseX,
+							clientY: mouseY,
+						},
+					})
+				);
+			}
+		} else {
+			switch (direction) {
+				case 'down':
+					dispatch(translateDown());
+					break;
+				case 'up':
+					dispatch(translateUp());
+					break;
+				case 'right':
+					dispatch(translateRight());
+					break;
+				case 'left':
+					dispatch(translateLeft());
+					break;
+				default:
+					dispatch(resetTransform());
+			}
 		}
 		redrawEverything();
 	};
@@ -538,6 +609,7 @@ function Canvas() {
 	return (
 		<CanvasWrapper sx={{ cursor }}>
 			<canvas
+				id="canvas-main"
 				ref={canvasRef}
 				onMouseDown={clickedController}
 				onMouseUp={unclickedController}
