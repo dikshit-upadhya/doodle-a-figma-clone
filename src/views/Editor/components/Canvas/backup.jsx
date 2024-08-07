@@ -6,6 +6,7 @@ import { openContextMenu } from '../../../../store/reducers/globalContextMenu';
 import { getMenuForCanvas } from '../../../../common/globalMenuHandlers';
 import {
 	resetTransform,
+	setSquares as setSquaresRedux,
 	translateDown,
 	translateLeft,
 	translateRight,
@@ -13,10 +14,6 @@ import {
 	zoomIn,
 	zoomOut,
 } from '../../../../store/reducers/canvas';
-import useLayers from '../../../../hooks/useLayers';
-import { layerTypeEnum } from '../../../../utils/contants';
-import { drawRectangles } from './methods';
-import { addLayer, setLayers } from '../../../../store/reducers/layers';
 
 const pointerEnum = {
 	default: 'url(cursor.png), auto',
@@ -45,23 +42,21 @@ Object.keys(pointerEnum).forEach((i) => {
 
 function Canvas() {
 	const dispatch = useDispatch();
-	const [, flatLayers, seggregatedLayers] = useLayers();
 	// redux status
 	const { activePage } = useSelector((state) => state.pages);
-	const { transform: canvasTransform } = useSelector((state) => state.canvas);
+	const { transform: canvasTransform, squares } = useSelector(
+		(state) => state.canvas
+	);
 	// local states
 	const [clicked, setClicked] = useState(false);
 	// const [squares, setSquares] = useState([]);
 
 	const [zIndex, setZIndex] = useState(1);
 	const [activeSquare, setActiveSquare] = useState([]);
-	const [currentlyHoveredLayer, setCurrentlyHoveredLayer] = useState({
+	const [currentlyHoveredSquare, setCurrentlyHoveredSquare] = useState({
 		id: '',
-		type: null,
-		props: {
-			offsetX: 0,
-			offsetY: 0,
-		},
+		offsetX: 0,
+		offsetY: 0,
 	});
 	const [currentlyHoveredCP, setCurrentlyHoveredCP] = useState({
 		id: '',
@@ -72,6 +67,20 @@ function Canvas() {
 	// refs
 	const canvasRef = useRef();
 	const canvasContext = useRef(null);
+
+	// methods
+	const setSquares = (payload) => {
+		if (typeof payload === 'function') {
+			const newObj = [...squares].map((i) => {
+				const obj = { ...i };
+				return obj;
+			});
+			const reqd = payload(newObj);
+			dispatch(setSquaresRedux(reqd));
+		} else {
+			dispatch(setSquaresRedux(payload));
+		}
+	};
 
 	const resetCanvas = () => {
 		const { r, g, b, a } = activePage.pageColor.rgb;
@@ -92,21 +101,107 @@ function Canvas() {
 		);
 	};
 
-	const redrawEverything = () => {
-		const context = canvasContext.current;
-		resetCanvas();
-		drawRectangles(seggregatedLayers.rectangles, context);
-	};
-
 	useEffect(() => {
 		const context = canvasRef.current.getContext('2d');
 		context.setTransform(canvasTransform);
 		canvasContext.current = context;
 		canvasRef.current.width = window.innerWidth;
 		canvasRef.current.height = window.innerHeight;
-		redrawEverything();
+		const rect = {
+			width: window.innerWidth,
+			height: window.innerHeight,
+		};
+		setSquares([
+			{
+				id: uuid(),
+				x: rect.width / 2 - 50,
+				y: rect.height / 2 - 50,
+				width: 100,
+				height: 100,
+				controlPoints: [
+					{
+						x: rect.width / 2 - 50,
+						y: rect.height / 2 - 50,
+						type: controlPoints.TOP_LEFT,
+					},
+					{
+						x: rect.width / 2 + 50,
+						y: rect.height / 2 - 50,
+						type: controlPoints.TOP_RIGHT,
+					},
+					{
+						x: rect.width / 2 - 50,
+						y: rect.height / 2 + 50,
+						type: controlPoints.BOTTOM_LEFT,
+					},
+					{
+						x: rect.width / 2 + 50,
+						y: rect.height / 2 + 50,
+						type: controlPoints.BOTTOM_RIGHT,
+					},
+				],
+				controlPoints2: [
+					{
+						x: 679,
+						y: 266,
+						type: controlPoints.TOP_LEFT,
+					},
+					{
+						x: 779,
+						y: 266,
+						type: controlPoints.TOP_RIGHT,
+					},
+					{
+						x: 679,
+						y: 366,
+						type: controlPoints.BOTTOM_LEFT,
+					},
+					{
+						x: 779,
+						y: 366,
+						type: controlPoints.BOTTOM_RIGHT,
+					},
+				],
+				background: 'red',
+				stroke: 'black',
+				zIndex,
+			},
+		]);
+		setZIndex((prev) => prev + 1);
+		resetCanvas();
 		window.addEventListener('contextmenu', (e) => e.preventDefault());
 	}, []);
+
+	const redrawEverything = () => {
+		const context = canvasContext.current;
+		resetCanvas();
+		squares.forEach((squareItem) => {
+			context.fillStyle = squareItem.background;
+			context.fillRect(
+				squareItem.x,
+				squareItem.y,
+				squareItem.width,
+				squareItem.height
+			);
+			context.strokeStyle = squareItem.stroke;
+			context.strokeRect(
+				squareItem.x,
+				squareItem.y,
+				squareItem.width,
+				squareItem.height
+			);
+			context.strokeStyle = 'blue';
+			context.fillStyle = 'white';
+			squareItem.controlPoints?.forEach((point) => {
+				context.beginPath();
+				context.moveTo(point.x, point.y);
+				context.arc(point.x, point.y, 5, 0, 2 * Math.PI, false);
+				context.stroke();
+				context.fill();
+				context.closePath();
+			});
+		});
+	};
 
 	useEffect(() => {
 		const { a, b, c, d, e, f } = canvasTransform;
@@ -129,37 +224,29 @@ function Canvas() {
 		e.preventDefault();
 		if (e.button === 0) {
 			setClicked(true);
-			if (currentlyHoveredLayer.id) {
-				// if (currentlyHoveredLayer.type === layerTypeEnum.RECTANGLE) {
-				const curSquare = flatLayers.find(
-					(i) => i.id === currentlyHoveredLayer.id
+			if (currentlyHoveredSquare.id) {
+				const curSquare = squares.find(
+					(i) => i.id === currentlyHoveredSquare.id
 				);
-				setCurrentlyHoveredLayer({
+				setCurrentlyHoveredSquare({
 					id: curSquare.id,
-					offsetX: Math.abs(curSquare.prop.x - mouseX),
-					offsetY: Math.abs(curSquare.prop.y - mouseY),
+					offsetX: Math.abs(curSquare.x - mouseX),
+					offsetY: Math.abs(curSquare.y - mouseY),
 				});
-				// }
 			} else {
 				const currentSquareId = uuid();
-				dispatch(
-					addLayer({
-						name: 'Rectangle',
+				setSquares((prev) => [
+					...prev.map((i) => ({ ...i, controlPoints2: i.controlPoints })),
+					{
 						id: currentSquareId,
-						type: layerTypeEnum.RECTANGLE.type,
-						parentId: null,
-						children: [],
-						prop: {
-							x: mouseX,
-							y: mouseY,
-							width: 0,
-							height: 0,
-							stroke: 'red',
-							background: 'blue',
-							zIndex,
-						},
-					})
-				);
+						x: mouseX,
+						y: mouseY,
+						width: 0,
+						height: 0,
+						background: 'blue',
+						zIndex,
+					},
+				]);
 				setZIndex((prev) => prev + 1);
 				setActiveSquare({ id: currentSquareId });
 			}
@@ -168,165 +255,164 @@ function Canvas() {
 
 	const unclickedController = () => {
 		// this function is so that when mouse clicks and draws square in opposite x direction or the opposite y direction. This function redefines the x and y coordinates of the square
-		const getModifiedSquaresForUnclickedSituation = (prev) => {
+		setSquares((prev) => {
 			const reqdArr = prev
-				.filter((i) => i.prop.width !== 0 || i.prop.height !== 0)
+				.filter((i) => i.width !== 0 || i.height !== 0)
 				.map((item) => {
-					const prop = item.prop;
-					const newProps = {};
-					if (prop.width <= 0) {
-						newProps.x = prop.x + prop.width;
-						newProps.width = Math.abs(prop.width);
-					} else {
-						newProps.x = prop.x;
-						newProps.width = prop.width;
+					const squareItem = item;
+					if (squareItem.width < 0) {
+						const curWidth = squareItem.width;
+						const curX = squareItem.x;
+						squareItem.x = curX + curWidth;
+						squareItem.width = Math.abs(squareItem.width);
 					}
-					if (prop.height <= 0) {
-						newProps.y = prop.y + prop.height;
-						newProps.height = Math.abs(prop.height);
-					} else {
-						newProps.y = prop.y;
-						newProps.height = prop.height;
+					if (squareItem.height < 0) {
+						const curHeight = squareItem.height;
+						const curY = squareItem.y;
+						squareItem.y = curY + curHeight;
+						squareItem.height = Math.abs(squareItem.height);
 					}
-					const newControlPoints = [
-						{ x: newProps.x, y: newProps.y, type: controlPoints.TOP_LEFT },
-						{
-							x: newProps.x + newProps.width,
-							y: newProps.y,
-							type: controlPoints.TOP_RIGHT,
-						},
-						{
-							x: newProps.x,
-							y: newProps.y + newProps.height,
-							type: controlPoints.BOTTOM_LEFT,
-						},
-						{
-							x: newProps.x + newProps.width,
-							y: newProps.y + newProps.height,
-							type: controlPoints.BOTTOM_RIGHT,
-						},
-					];
+					if (!squareItem.controlPoints2) {
+						squareItem.controlPoints2 = [
+							{
+								x: squareItem.x,
+								y: squareItem.y,
+								type: controlPoints.TOP_LEFT,
+							},
+							{
+								x: squareItem.x + squareItem.width,
+								y: squareItem.y,
+								type: controlPoints.TOP_RIGHT,
+							},
+							{
+								x: squareItem.x,
+								y: squareItem.y + squareItem.height,
+								type: controlPoints.BOTTOM_LEFT,
+							},
+							{
+								x: squareItem.x + squareItem.width,
+								y: squareItem.y + squareItem.height,
+								type: controlPoints.BOTTOM_RIGHT,
+							},
+						];
+					}
 					return {
-						...item,
-						prop: {
-							...prop,
-							...newProps,
-							controlPoints: newControlPoints,
-						},
+						...squareItem,
+						controlPoints: squareItem.controlPoints2,
+						controlPoints2: squareItem.controlPoints2,
 					};
 				});
 			return reqdArr;
-		};
-		dispatch(setLayers(getModifiedSquaresForUnclickedSituation(flatLayers)));
+		});
 		setClicked(false);
 		setActiveSquare({ id: null, offsetX: 10, offsetY: 10 });
 	};
 
 	useEffect(() => {
 		redrawEverything();
-	}, [flatLayers, activePage]);
+	}, [squares, activePage]);
 
 	const draw = (e) => {
 		const [mouseX, mouseY] = getAdjustedCoordinates(e);
 		// find the square that you are currently drawing.
-		const currentSquare = flatLayers.find((i) => i.id === activeSquare.id);
-		const getUpdatedLayersForDrawSituation = (prev) => [
+		const currentSquare = squares.find((i) => i.id === activeSquare.id);
+		setSquares((prev) => [
 			...prev.map((i) => {
 				if (i.id === currentSquare.id) {
 					return {
-						...currentSquare,
-						prop: {
-							...currentSquare.prop,
-							width: mouseX - currentSquare.prop.x,
-							height: mouseY - currentSquare.prop.y,
-						},
+						id: currentSquare.id,
+						x: currentSquare.x,
+						y: currentSquare.y,
+						width: mouseX - currentSquare.x,
+						height: mouseY - currentSquare.y,
+						background: '#2234eb64',
+						zIndex: currentSquare.zIndex,
 					};
 				}
 				return i;
 			}),
-		];
-		dispatch(setLayers(getUpdatedLayersForDrawSituation(flatLayers)));
+		]);
 	};
 
 	const moveHandler = (e) => {
 		const [mouseX, mouseY] = getAdjustedCoordinates(e);
 		if (clicked) {
 			if (currentlyHoveredCP.id) {
-				const getLayersForCurrentlyHoveredCPSituation = (prev) =>
+				setSquares((prev) =>
 					prev.map((i) => {
 						if (i.id === currentlyHoveredCP.id) {
+							// if(currentlyHoveredCP.type === controlPoints.TOP_LEFT) {
+
+							// }
 							switch (currentlyHoveredCP.type) {
 								case controlPoints.TOP_LEFT:
 									return {
-										...i,
-										prop: {
-											...i.prop,
-											x: mouseX,
-											y: mouseY,
-											controlPoints: [],
-											width: i.prop.x + i.prop.width - mouseX,
-											height: i.prop.y + i.prop.height - mouseY,
-										},
+										id: i.id,
+										x: mouseX,
+										y: mouseY,
+										controlPoints: [],
+										width: i.x + i.width - mouseX,
+										height: i.y + i.height - mouseY,
+										background: i.background,
+										zIndex: i.zIndex,
 									};
 								case controlPoints.TOP_RIGHT:
 									return {
-										...i,
-										prop: {
-											...i.prop,
-											y: mouseY,
-											controlPoints: [],
-											width: mouseX - i.prop.x,
-											height: i.prop.y + i.prop.height - mouseY,
-										},
+										id: i.id,
+										x: i.x,
+										y: mouseY,
+										controlPoints: [],
+										width: mouseX - i.x,
+										height: i.y + i.height - mouseY,
+										background: i.background,
+										zIndex: i.zIndex,
 									};
 								case controlPoints.BOTTOM_LEFT:
 									return {
-										...i,
-										prop: {
-											...i.prop,
-											x: mouseX,
-											controlPoints: [],
-											width: i.prop.width + i.prop.x - mouseX,
-											height: mouseY - i.prop.y,
-										},
+										id: i.id,
+										x: mouseX,
+										y: i.y,
+										controlPoints: [],
+										width: i.width + i.x - mouseX,
+										height: mouseY - i.y,
+										background: i.background,
+										zIndex: i.zIndex,
 									};
 								case controlPoints.BOTTOM_RIGHT:
 									return {
-										...i,
-										prop: {
-											...i.prop,
-											controlPoints: [],
-											width: mouseX - i.prop.x,
-											height: mouseY - i.prop.y,
-										},
+										id: i.id,
+										x: i.x,
+										y: i.y,
+										controlPoints: [],
+										width: mouseX - i.x,
+										height: mouseY - i.y,
+										background: i.background,
+										zIndex: i.zIndex,
 									};
 								default:
 									break;
 							}
 						}
 						return { ...i };
-					});
-				dispatch(
-					setLayers(getLayersForCurrentlyHoveredCPSituation(flatLayers))
+					})
 				);
-			} else if (currentlyHoveredLayer.id) {
-				const getUpdatedLayersForSquareHoveredSitutation = (prev) =>
+			} else if (currentlyHoveredSquare.id) {
+				setSquares((prev) =>
 					prev.map((i) => {
-						if (i.id === currentlyHoveredLayer.id) {
+						if (i.id === currentlyHoveredSquare.id) {
 							return {
-								...i,
-								prop: {
-									...i.prop,
-									x: mouseX - currentlyHoveredLayer.offsetX,
-									y: mouseY - currentlyHoveredLayer.offsetY,
-									controlPoints: [],
-								},
+								id: i.id,
+								x: mouseX - currentlyHoveredSquare.offsetX,
+								y: mouseY - currentlyHoveredSquare.offsetY,
+								controlPoints: [],
+								width: i.width,
+								height: i.height,
+								background: i.background,
+								zIndex: i.zIndex,
 							};
 						}
 						return { ...i };
-					});
-				dispatch(
-					setLayers(getUpdatedLayersForSquareHoveredSitutation(flatLayers))
+					})
 				);
 			} else {
 				draw(e);
@@ -335,9 +421,8 @@ function Canvas() {
 			const currentHoveredCPArray = [];
 			const currentHoveredSquareArray = [];
 
-			flatLayers.forEach((layerElement) => {
-				const prop = layerElement.prop;
-				prop?.controlPoints.forEach((cpElement) => {
+			squares.forEach((squareElement) => {
+				squareElement.controlPoints.forEach((cpElement) => {
 					const dist = Math.sqrt(
 						(cpElement.x - mouseX) * (cpElement.x - mouseX) +
 							(cpElement.y - mouseY) * (cpElement.y - mouseY)
@@ -345,17 +430,17 @@ function Canvas() {
 					if (dist <= 12) {
 						currentHoveredCPArray.push({
 							currentHoveredCP: cpElement.type,
-							currentHoveredSquare: layerElement,
+							currentHoveredSquare: squareElement,
 						});
 					}
 				});
 				if (
-					mouseX >= prop.x &&
-					mouseX <= prop.x + prop.width &&
-					mouseY >= prop.y &&
-					mouseY <= prop.y + prop.height
+					mouseX >= squareElement.x &&
+					mouseX <= squareElement.x + squareElement.width &&
+					mouseY >= squareElement.y &&
+					mouseY <= squareElement.y + squareElement.height
 				) {
-					currentHoveredSquareArray.push(layerElement);
+					currentHoveredSquareArray.push(squareElement);
 				}
 			});
 			const mostRecentCP =
@@ -364,8 +449,7 @@ function Canvas() {
 				currentHoveredSquareArray[currentHoveredSquareArray.length - 1];
 			if (!!mostRecentCP && !!mostRecentSquare) {
 				if (
-					mostRecentCP.currentHoveredSquare.prop.zIndex >=
-					mostRecentSquare.prop.zIndex
+					mostRecentCP.currentHoveredSquare.zIndex >= mostRecentSquare.zIndex
 				) {
 					setCurrentlyHoveredCP({
 						id: mostRecentCP.currentHoveredSquare.id,
@@ -379,24 +463,24 @@ function Canvas() {
 							: pointerEnum.bltr
 					);
 				} else {
-					setCurrentlyHoveredLayer({
+					setCurrentlyHoveredSquare({
 						id: mostRecentSquare.id,
-						offsetX: currentlyHoveredLayer.offsetX,
-						offsetY: currentlyHoveredLayer.offsetY,
+						offsetX: currentlyHoveredSquare.offsetX,
+						offsetY: currentlyHoveredSquare.offsetY,
 					});
 					setCursor(pointerEnum.default);
 				}
 			} else {
 				if (mostRecentSquare) {
-					if (currentlyHoveredLayer.id !== mostRecentSquare.id) {
-						setCurrentlyHoveredLayer({
+					if (currentlyHoveredSquare.id !== mostRecentSquare.id) {
+						setCurrentlyHoveredSquare({
 							id: mostRecentSquare.id,
-							offsetX: currentlyHoveredLayer.offsetX,
-							offsetY: currentlyHoveredLayer.offsetY,
+							offsetX: currentlyHoveredSquare.offsetX,
+							offsetY: currentlyHoveredSquare.offsetY,
 						});
 					}
 				} else {
-					setCurrentlyHoveredLayer({
+					setCurrentlyHoveredSquare({
 						id: null,
 						offsetX: 0,
 						offsetY: 0,

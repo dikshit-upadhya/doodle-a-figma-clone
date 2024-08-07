@@ -15,7 +15,6 @@ function DesignPropertiesMenu() {
 	const dispatch = useDispatch();
 	// redux states
 	const { activePage } = useSelector((state) => state.pages);
-
 	// local states
 	const [containerWidth] = useState(270);
 
