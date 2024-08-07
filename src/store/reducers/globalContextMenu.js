@@ -14,16 +14,25 @@ const globalContextMenuSlice = createSlice({
 				state.active = true;
 				switch (anchor) {
 					case 'BOTTOM':
-						state.coordinates = { top: rect.bottom, left: rect.left };
+						state.coordinates = { top: `${rect.bottom}`, left: `${rect.left}` };
 						break;
 					case 'RIGHT':
-						state.coordinates = { top: rect.top, left: rect.right };
+						state.coordinates = { top: `${rect.top}`, left: `${rect.right}` };
 						break;
 					case 'LEFT':
-						state.coordinates = { top: rect.top, right: rect.left };
+						state.coordinates = { top: `${rect.top}`, left: `${rect.left}` };
+						break;
+					case 'BOTTOM-LEFT':
+						state.coordinates = {
+							top: `${rect.bottom}`,
+							right: `${window.innerWidth - (rect.x + rect.width)}`,
+						};
 						break;
 					default:
-						state.coordinates = { top: event.clientY, left: event.clientX };
+						state.coordinates = {
+							top: `${event.clientY}`,
+							left: `${event.clientX}`,
+						};
 						break;
 				}
 				state.menuContent = menuContent;

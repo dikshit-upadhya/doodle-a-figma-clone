@@ -7,9 +7,11 @@ export default (obj) => {
 	return {
 		id: uuid(),
 		title: obj.title,
+		iconBefore: obj.iconBefore ?? '',
 		breakAfter: obj.breakAfter ?? false,
 		disabled: obj.disabled ?? false,
 		onClick: obj.onClick ?? (() => {}),
 		children: obj.children ?? [],
+		quitOnClick: obj.quitOnClick ?? true,
 	};
 };

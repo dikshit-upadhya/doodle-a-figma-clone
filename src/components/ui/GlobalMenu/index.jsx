@@ -15,8 +15,10 @@ import { DRAWER_WHITE_BORDER } from '../../../utils/contants';
 
 const MenuWrapper = styled(Box)(({ theme, coordinates }) => ({
 	position: 'absolute',
-	top: coordinates.top,
-	left: coordinates.left,
+	...(!!coordinates.top && { top: `${coordinates.top}px` }),
+	...(!!coordinates.left && { left: `${coordinates.left}px` }),
+	...(!!coordinates.right && { right: `${coordinates.right}px` }),
+	...(!!coordinates.bottom && { bottom: `${coordinates.bottom}px` }),
 	zIndex: 1000,
 	display: 'flex',
 	flexDirection: 'column',
@@ -85,7 +87,9 @@ function GlobalContextMenu() {
 							onClick={() => {
 								if (menuItem.children.length > 0) return;
 								if (menuItem.onClick) menuItem.onClick();
-								dispatch(closeContextMenu());
+								if (menuItem.quitOnClick) {
+									dispatch(closeContextMenu());
+								}
 							}}
 							onMouseEnter={() => {
 								setHoveredMenuItem(menuItem);

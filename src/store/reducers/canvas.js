@@ -91,7 +91,8 @@ const canvasSlice = createSlice({
 
 		// scaling (zoom in, zoom out)
 		zoomIn: (state, { payload: { event } }) => {
-			const scaleFactor = state.scale + 0.1;
+			if (state.scale + 0.05 > 5) return;
+			const scaleFactor = state.scale + 0.05;
 			state.scale = scaleFactor;
 			const adjX = event.clientX;
 			const adjY = event.clientY;
@@ -109,7 +110,75 @@ const canvasSlice = createSlice({
 			};
 		},
 		zoomOut: (state, { payload: { event } }) => {
-			const scaleFactor = state.scale - 0.1;
+			if (state.scale - 0.01 <= 0.05) return;
+			const scaleFactor = state.scale - 0.01;
+			state.scale = scaleFactor;
+			const adjX = event.clientX;
+			const adjY = event.clientY;
+			state.transform = {
+				a: scaleFactor,
+				b: 0,
+				c: 0,
+				d: scaleFactor,
+				// e: -(event.clientX * (scaleFactor - 1)),
+				e: -(adjX - adjX / scaleFactor) + state.transform._e / scaleFactor,
+				_e: state.transform._e,
+				// f: -(event.clientY * (scaleFactor - 1)),
+				f: -(adjY - adjY / scaleFactor) + state.transform._f / scaleFactor,
+				_f: state.transform._f,
+			};
+		},
+		zoomInCenter: (state) => {
+			const event = {
+				clientX: window.innerWidth / 2,
+				clientY: window.innerHeight / 2,
+			};
+			if (state.scale + 0.05 > 5) return;
+			const scaleFactor = state.scale + 0.05;
+			state.scale = scaleFactor;
+			const adjX = event.clientX;
+			const adjY = event.clientY;
+			state.transform = {
+				a: scaleFactor,
+				b: 0,
+				c: 0,
+				d: scaleFactor,
+				// e: -(event.clientX * (scaleFactor - 1)),
+				e: -(adjX - adjX / scaleFactor) + state.transform._e / scaleFactor,
+				_e: state.transform._e,
+				// f: -(event.clientY * (scaleFactor - 1)),
+				f: -(adjY - adjY / scaleFactor) + state.transform._f / scaleFactor,
+				_f: state.transform._f,
+			};
+		},
+		zoomOutCenter: (state) => {
+			const event = {
+				clientX: window.innerWidth / 2,
+				clientY: window.innerHeight / 2,
+			};
+			if (state.scale - 0.05 <= 0.05) return;
+			const scaleFactor = state.scale - 0.05;
+			state.scale = scaleFactor;
+			const adjX = event.clientX;
+			const adjY = event.clientY;
+			state.transform = {
+				a: scaleFactor,
+				b: 0,
+				c: 0,
+				d: scaleFactor,
+				// e: -(event.clientX * (scaleFactor - 1)),
+				e: -(adjX - adjX / scaleFactor) + state.transform._e / scaleFactor,
+				_e: state.transform._e,
+				// f: -(event.clientY * (scaleFactor - 1)),
+				f: -(adjY - adjY / scaleFactor) + state.transform._f / scaleFactor,
+				_f: state.transform._f,
+			};
+		},
+		zoomToFactor: (state, { payload: { scaleFactor } }) => {
+			const event = {
+				clientX: window.innerWidth / 2,
+				clientY: window.innerHeight / 2,
+			};
 			state.scale = scaleFactor;
 			const adjX = event.clientX;
 			const adjY = event.clientY;
@@ -139,5 +208,8 @@ export const {
 	translateRight,
 	resetTransform,
 	zoomIn,
+	zoomInCenter,
 	zoomOut,
+	zoomOutCenter,
+	zoomToFactor,
 } = canvasSlice.actions;

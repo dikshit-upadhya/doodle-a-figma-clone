@@ -24,6 +24,7 @@ import {
 	getMenuForMainMenu,
 	getMenuForPen,
 	getMenuForRectangle,
+	getMenuForZoomMenu,
 } from '../../../../common/globalMenuHandlers';
 import BrightBlueButton from '../../../../components/atomic/Buttons/BrightBlueButton';
 import PersonAvatar from '../../../../components/atomic/Avatar/avatar';
@@ -102,7 +103,18 @@ function ToolbarComponent() {
 			<ToolbarRight>
 				<PersonAvatar content={{ type: 'text', content: 'D' }} />
 				<BrightBlueButton title="Share" />
-				<ToolItems width="60px">
+				<ToolItems
+					onClick={(event) => {
+						dispatch(
+							openContextMenu({
+								event,
+								menuContent: getMenuForZoomMenu(),
+								anchor: 'BOTTOM-LEFT',
+							})
+						);
+					}}
+					width="60px"
+				>
 					<Typography
 						textAlign="left"
 						variant="toolbarText"
